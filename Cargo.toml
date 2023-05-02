@@ -1,0 +1,14 @@
+[package]
+name = "kewb"
+version = "0.1.0"
+edition = "2021"
+authors = ["LIOKA Ranraison Fiderana <luckasranarison@gmail.com>"]
+license = "MIT"
+
+[workspace]
+members = ["cube", "two-phase"]
+
+[dependencies]
+clap = { version = "4.2.5", features = ["derive"] }
+cube = { path = "cube" }
+two-phase = { path = "two-phase" }
