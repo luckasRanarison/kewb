@@ -9,18 +9,20 @@ pub enum Corner {
     DFL, DFR, DBR, DBL,
 }
 
-impl From<u8> for Corner {
-    fn from(value: u8) -> Self {
+impl TryFrom<u8> for Corner {
+    type Error = String;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
-            0 => UBL,
-            1 => UBR,
-            2 => UFR,
-            3 => UFL,
-            4 => DFL,
-            5 => DFR,
-            6 => DBR,
-            7 => DBL,
-            _ => panic!("Invalid corner value"),
+            0 => Ok(UBL),
+            1 => Ok(UBR),
+            2 => Ok(UFR),
+            3 => Ok(UFL),
+            4 => Ok(DFL),
+            5 => Ok(DFR),
+            6 => Ok(DBR),
+            7 => Ok(DBL),
+            _ => Err("Invalid corner value".to_owned()),
         }
     }
 }
@@ -33,22 +35,24 @@ pub enum Edge {
     DF, DR, DB, DL,
 }
 
-impl From<u8> for Edge {
-    fn from(value: u8) -> Self {
+impl TryFrom<u8> for Edge {
+    type Error = String;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
-            0 => BL,
-            1 => BR,
-            2 => FR,
-            3 => FL,
-            4 => UB,
-            5 => UR,
-            6 => UF,
-            7 => UL,
-            8 => DF,
-            9 => DR,
-            10 => DB,
-            11 => DL,
-            _ => panic!("Invalid edge value"),
+            0 => Ok(BL),
+            1 => Ok(BR),
+            2 => Ok(FR),
+            3 => Ok(FL),
+            4 => Ok(UB),
+            5 => Ok(UR),
+            6 => Ok(UF),
+            7 => Ok(UL),
+            8 => Ok(DF),
+            9 => Ok(DR),
+            10 => Ok(DB),
+            11 => Ok(DL),
+            _ => Err("Invalid edge value".to_owned()),
         }
     }
 }

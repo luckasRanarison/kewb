@@ -31,7 +31,7 @@ pub fn eo_to_index(edge: &[u8; 12]) -> u16 {
         index = index * 2 + *eo as u16;
     }
 
-    index
+    index.into()
 }
 
 pub fn index_to_eo(mut index: u16) -> [u8; 12] {
@@ -62,12 +62,12 @@ fn calculate_combo(n: u8, k: u8) -> u16 {
     result
 }
 
-pub fn e_combo_to_index(edge: &[u8; 12]) -> u16 {
-    let mut index = 0;
+pub fn e_combo_to_index(edge: &[Edge; 12]) -> u16 {
+    let mut index: u16 = 0;
     let mut k = 4;
 
     for i in (0..12).rev() {
-        if edge[i] == 1 {
+        if edge[i] as u8 <= 3 {
             index += calculate_combo(i as u8, k);
             k -= 1;
         }
@@ -76,19 +76,19 @@ pub fn e_combo_to_index(edge: &[u8; 12]) -> u16 {
     index
 }
 
-pub fn index_to_e_combo(mut index: u16) -> [u8; 12] {
-    let mut combo: [u8; 12] = [0; 12];
+pub fn index_to_e_combo(mut index: u16) -> [Edge; 12] {
+    let mut combo: [u8; 12] = [4; 12]; // fake ep
     let mut k = 4;
 
     for i in (0..12).rev() {
         if index >= calculate_combo(i, k) {
-            combo[i as usize] = 1;
+            combo[i as usize] = k - 1;
             index -= calculate_combo(i, k);
             k -= 1;
         }
     }
 
-    combo
+    combo.map(|value| Edge::try_from(value).unwrap())
 }
 
 pub fn cp_to_index(cp: &[Corner; 8]) -> u16 {
@@ -112,14 +112,14 @@ pub fn index_to_cp(mut index: u16) -> [Corner; 8] {
     for i in (0..7).rev() {
         cp[i] = (index % (8 - i as u16)) as u8;
         index /= 8 - i as u16;
-        for j in (i as usize + 1)..8 {
+        for j in (i + 1)..8 {
             if cp[j] >= cp[i] {
                 cp[j] += 1;
             }
         }
     }
 
-    cp.map(|value| Corner::from(value))
+    cp.map(|value| Corner::try_from(value).unwrap())
 }
 
 pub fn ud_ep_to_index(ep: &[Edge; 12]) -> u16 {
@@ -139,7 +139,7 @@ pub fn ud_ep_to_index(ep: &[Edge; 12]) -> u16 {
 }
 
 pub fn index_to_ud_ep(mut index: u16) -> [Edge; 12] {
-    let mut ep = [0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4];
+    let mut ep = [0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4]; // fake ep
     let slice = &mut ep[4..12];
 
     for i in (0..7).rev() {
@@ -152,15 +152,15 @@ pub fn index_to_ud_ep(mut index: u16) -> [Edge; 12] {
         }
     }
 
-    ep.map(|value| Edge::from(value))
+    ep.map(|value| Edge::try_from(value).unwrap())
 }
 
 pub fn e_ep_to_index(ep: &[Edge; 12]) -> u16 {
-    let slice = &ep[0..4];
     let mut index: u16 = 0;
+    let slice = &ep[0..4];
 
     for i in 0..4 {
-        index *= (4 - i as u16) as u16;
+        index *= 4 - i as u16;
         for j in i + 1..4 {
             if slice[i] > slice[j] {
                 index += 1;
@@ -185,16 +185,13 @@ pub fn index_to_e_ep(mut index: u16) -> [Edge; 12] {
         }
     }
 
-    ep.map(|value| Edge::from(value))
+    ep.map(|value| Edge::try_from(value).unwrap())
 }
 
 #[cfg(test)]
 mod test {
     use super::{co_to_index, index_to_co};
-    use crate::index::{
-        cp_to_index, e_combo_to_index, e_ep_to_index, eo_to_index, index_to_cp, index_to_e_combo,
-        index_to_e_ep, index_to_eo, index_to_ud_ep, ud_ep_to_index,
-    };
+    use crate::index::*;
     use cube::state::{Edge::*, SOLVED_STATE};
 
     #[test]
@@ -219,13 +216,13 @@ mod test {
 
     #[test]
     fn test_e_combo() {
-        let combo = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0];
-        assert_eq!(e_combo_to_index(&combo), 0);
-        assert_eq!(index_to_e_combo(0), combo);
+        assert_eq!(e_combo_to_index(&SOLVED_STATE.ep), 0);
+        let fake_combo = [BL, BR, FR, FL, UB, UB, UB, UB, UB, UB, UB, UB];
+        assert_eq!(index_to_e_combo(0), fake_combo);
 
-        let combo = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1];
-        assert_eq!(e_combo_to_index(&combo), 494);
-        assert_eq!(index_to_e_combo(494), combo);
+        let fake_combo = [UB, UB, UB, UB, UB, UB, UB, UB, BL, BR, FR, FL];
+        assert_eq!(e_combo_to_index(&fake_combo), 494);
+        assert_eq!(index_to_e_combo(494), fake_combo);
     }
 
     #[test]

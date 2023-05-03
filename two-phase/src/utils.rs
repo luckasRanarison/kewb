@@ -14,7 +14,3 @@ pub const ALL_MOVES: [Move; 18] = [
 pub const PHASE2_MOVES: [Move; 10] = [U, U2, U3, D, D2, D3, R2, L2, F2, B2];
 
 pub type Table<T> = Vec<Vec<T>>;
-
-pub fn is_move_available(prev: Move, current: Move) -> bool {
-    current != prev && !current.is_inverse(prev) && !current.is_inverse(prev)
-}

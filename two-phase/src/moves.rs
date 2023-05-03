@@ -1,6 +1,6 @@
 use crate::{index::*, utils::*};
 use bincode::{Decode, Encode};
-use cube::state::{Edge::*, SOLVED_STATE};
+use cube::state::SOLVED_STATE;
 
 #[derive(Encode, Decode)]
 pub struct MoveTable {
@@ -49,25 +49,13 @@ pub fn get_eo_table() -> Table<u16> {
 pub fn get_e_combo_table() -> Table<u16> {
     let mut e_combo_table = vec![vec![0; 18]; E_COMBO_COUNT as usize];
     for i in 0..E_COMBO_COUNT {
-        let e_combo = index_to_e_combo(i);
-        let mut ep = SOLVED_STATE.ep;
-
-        for i in 0..12 {
-            ep[i] = if e_combo[i] == 1 { BR } else { BL }
-        }
-
+        let ep = index_to_e_combo(i);
         let mut state = SOLVED_STATE;
         state.ep = ep;
 
         for (i_m, m) in ALL_MOVES.iter().enumerate() {
             let new_state = state.apply_move(*m);
-            let mut new_e_combo = [0; 12];
-
-            for i in 0..12 {
-                new_e_combo[i] = new_state.ep[i] as u8;
-            }
-
-            e_combo_table[i as usize][i_m] = e_combo_to_index(&new_e_combo);
+            e_combo_table[i as usize][i_m] = e_combo_to_index(&new_state.ep);
         }
     }
 

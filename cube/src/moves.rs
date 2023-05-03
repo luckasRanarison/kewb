@@ -14,29 +14,6 @@ pub enum Move {
     B, B2, B3,
 }
 
-impl Move {
-    pub fn is_inverse(&self, other: Move) -> bool {
-        match (&self, other) {
-            (U | U2 | U3, D | D2 | D3) => true,
-            (R | R2 | R3, L | L2 | L3) => true,
-            (F | F2 | F3, B | B2 | B3) => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_same_layer(&self, other: Move) -> bool {
-        match (&self, other) {
-            (U | U2 | U3, U | U2 | U3) => true,
-            (D | D2 | D3, D | D2 | D3) => true,
-            (R | R2 | R3, R | R2 | R3) => true,
-            (L | L2 | L3, L | L2 | L3) => true,
-            (F | F2 | F3, F | F2 | F3) => true,
-            (B | B2 | B3, B | B2 | B3) => true,
-            _ => false,
-        }
-    }
-}
-
 impl fmt::Display for Move {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -60,6 +37,33 @@ impl fmt::Display for Move {
             B3 => write!(f, "B'"),
         }
     }
+}
+
+impl Move {
+    pub fn is_inverse(&self, other: Move) -> bool {
+        match (&self, other) {
+            (U | U2 | U3, D | D2 | D3) => true,
+            (R | R2 | R3, L | L2 | L3) => true,
+            (F | F2 | F3, B | B2 | B3) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_same_layer(&self, other: Move) -> bool {
+        match (&self, other) {
+            (U | U2 | U3, U | U2 | U3) => true,
+            (D | D2 | D3, D | D2 | D3) => true,
+            (R | R2 | R3, R | R2 | R3) => true,
+            (L | L2 | L3, L | L2 | L3) => true,
+            (F | F2 | F3, F | F2 | F3) => true,
+            (B | B2 | B3, B | B2 | B3) => true,
+            _ => false,
+        }
+    }
+}
+
+pub fn is_move_available(prev: Move, current: Move) -> bool {
+    current != prev && !current.is_inverse(prev) && !current.is_same_layer(prev)
 }
 
 pub fn scramble_from_string(string: &str) -> Option<Vec<Move>> {

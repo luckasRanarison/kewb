@@ -10,11 +10,11 @@ use std::{
 };
 
 use cube::{
-    moves::Move,
+    moves::{is_move_available, Move},
     state::{State, SOLVED_STATE},
 };
 use index::{cp_to_index, e_ep_to_index, ud_ep_to_index};
-use utils::{is_move_available, ALL_MOVES, PHASE2_MOVES};
+use utils::{ALL_MOVES, PHASE2_MOVES};
 
 use crate::{
     fs::read_table,
@@ -25,9 +25,9 @@ use crate::{
 
 #[derive(Debug)]
 struct Phase1State {
-    co_index: u16,
-    eo_index: u16,
-    e_combo_index: u16,
+    co_index: usize,
+    eo_index: usize,
+    e_combo_index: usize,
 }
 
 impl Phase1State {
@@ -35,19 +35,59 @@ impl Phase1State {
         self.co_index == 0 && self.eo_index == 0 && self.e_combo_index == 0
     }
 
+    fn next(&self, table: &MoveTable, move_index: usize) -> Self {
+        let co_index = table.co[self.co_index][move_index].into();
+        let eo_index = table.eo[self.eo_index][move_index].into();
+        let e_combo_index = table.e_combo[self.e_combo_index][move_index].into();
+
+        Self {
+            co_index,
+            eo_index,
+            e_combo_index,
+        }
+    }
+
     fn prune(&self, table: &PruningTable, depth: u8) -> bool {
-        let co_e_dist = table.co_e[self.co_index as usize][self.e_combo_index as usize];
-        let eo_e_dist = table.eo_e[self.eo_index as usize][self.e_combo_index as usize];
+        let co_e_dist = table.co_e[self.co_index][self.e_combo_index];
+        let eo_e_dist = table.eo_e[self.eo_index][self.e_combo_index];
         let max = co_e_dist.max(eo_e_dist);
 
         max > depth
     }
 }
 
+impl From<State> for Phase1State {
+    fn from(value: State) -> Self {
+        let co_index = co_to_index(&value.co).into();
+        let eo_index = eo_to_index(&value.eo).into();
+        let e_combo_index = e_combo_to_index(&value.ep).into();
+
+        Self {
+            co_index,
+            eo_index,
+            e_combo_index,
+        }
+    }
+}
+
 struct Phase2State {
-    cp_index: u16,
-    ep_index: u16,
-    e_ep_index: u16,
+    cp_index: usize,
+    ep_index: usize,
+    e_ep_index: usize,
+}
+
+impl From<State> for Phase2State {
+    fn from(value: State) -> Self {
+        let cp_index = cp_to_index(&value.cp).into();
+        let ep_index = ud_ep_to_index(&value.ep).into();
+        let e_ep_index = e_ep_to_index(&value.ep).into();
+
+        Self {
+            cp_index,
+            ep_index,
+            e_ep_index,
+        }
+    }
 }
 
 impl Phase2State {
@@ -55,9 +95,21 @@ impl Phase2State {
         self.cp_index == 0 && self.ep_index == 0 && self.e_ep_index == 0
     }
 
+    fn next(&self, table: &MoveTable, move_index: usize) -> Self {
+        let cp_index = table.cp[self.cp_index][move_index].into();
+        let ep_index = table.ep[self.ep_index][move_index].into();
+        let e_ep_index = table.e_combo[self.e_ep_index][move_index].into();
+
+        Self {
+            cp_index,
+            ep_index,
+            e_ep_index,
+        }
+    }
+
     fn prune(&self, table: &PruningTable, depth: u8) -> bool {
-        let cp_e_dist = table.cp_e[self.cp_index as usize][self.e_ep_index as usize];
-        let ep_e_dist = table.ep_e[self.ep_index as usize][self.e_ep_index as usize];
+        let cp_e_dist = table.cp_e[self.cp_index][self.e_ep_index];
+        let ep_e_dist = table.ep_e[self.ep_index][self.e_ep_index];
         let max = cp_e_dist.max(ep_e_dist);
 
         max > depth
@@ -140,24 +192,7 @@ impl Solver {
         let start = Instant::now();
 
         for depth in 0..=self.max_length {
-            let co_index = co_to_index(&state.co);
-            let eo_index = eo_to_index(&state.eo);
-            let mut e_combo = [0; 12];
-
-            for i in 0..12 {
-                match state.ep[i] as u8 {
-                    0..=3 => e_combo[i] = 1,
-                    _ => continue,
-                };
-            }
-
-            let e_combo_index = e_combo_to_index(&e_combo);
-            let state = Phase1State {
-                co_index,
-                eo_index,
-                e_combo_index,
-            };
-
+            let state = Phase1State::from(state);
             self.solve_phase_1(state, depth, start);
 
             if start.elapsed() > self.timeout {
@@ -185,21 +220,13 @@ impl Solver {
                     if self.max_length > self.solution_phase_1.len() as u8 {
                         self.max_length - self.solution_phase_1.len() as u8
                     } else {
-                        return false;
+                        return true;
                     }
                 }
             };
 
             for phase2_depth in 0..=max_depth {
-                let cp_index = cp_to_index(&cube_state.cp);
-                let ep_index = ud_ep_to_index(&cube_state.ep);
-                let e_ep_index = e_ep_to_index(&cube_state.ep);
-                let state = Phase2State {
-                    cp_index,
-                    ep_index,
-                    e_ep_index,
-                };
-
+                let state = Phase2State::from(cube_state);
                 if self.solve_phase_2(state, phase2_depth, time) {
                     return true;
                 }
@@ -220,18 +247,12 @@ impl Solver {
             }
 
             self.solution_phase_1.push(*m);
-            let co_index = self.move_table.co[state.co_index as usize][i_m];
-            let eo_index = self.move_table.eo[state.eo_index as usize][i_m];
-            let e_combo_index = self.move_table.e_combo[state.e_combo_index as usize][i_m];
-            let new_state = Phase1State {
-                co_index,
-                eo_index,
-                e_combo_index,
-            };
+            let new_state = state.next(&self.move_table, i_m);
 
             if self.solve_phase_1(new_state, depth - 1, time) {
                 return true;
             }
+
             self.solution_phase_1.pop();
         }
 
@@ -244,20 +265,18 @@ impl Solver {
         }
 
         if depth == 0 && state.is_solved() {
+            let solution = Solution {
+                phase_1: self.solution_phase_1.clone(),
+                phase_2: self.solution_phase_2.clone(),
+            };
+
             if let Some(best_solution) = &mut self.best_solution {
                 let current_length = self.solution_phase_1.len() + self.solution_phase_2.len();
                 if best_solution.len() > current_length {
-                    println!("Found a better solution");
-                    *best_solution = Solution {
-                        phase_1: self.solution_phase_1.clone(),
-                        phase_2: self.solution_phase_2.clone(),
-                    }
+                    *best_solution = solution
                 }
             } else {
-                self.best_solution = Some(Solution {
-                    phase_1: self.solution_phase_1.clone(),
-                    phase_2: self.solution_phase_2.clone(),
-                })
+                self.best_solution = Some(solution)
             }
 
             return true;
@@ -272,9 +291,7 @@ impl Solver {
                 if !is_move_available(*prev, *m) {
                     continue;
                 }
-            }
-
-            if self.solution_phase_2.len() == 0 {
+            } else {
                 if let Some(prev) = self.solution_phase_1.last() {
                     if !is_move_available(*prev, *m) {
                         continue;
@@ -283,18 +300,12 @@ impl Solver {
             }
 
             self.solution_phase_2.push(*m);
-            let cp_index = self.move_table.cp[state.cp_index as usize][i_m];
-            let ep_index = self.move_table.ep[state.ep_index as usize][i_m];
-            let e_ep_index = self.move_table.e_ep[state.e_ep_index as usize][i_m];
-            let new_state = Phase2State {
-                cp_index,
-                ep_index,
-                e_ep_index,
-            };
+            let new_state = state.next(&self.move_table, i_m);
 
             if self.solve_phase_2(new_state, depth - 1, time) {
                 return true;
             }
+
             self.solution_phase_2.pop();
         }
 
