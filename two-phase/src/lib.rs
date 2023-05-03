@@ -98,7 +98,7 @@ impl Phase2State {
     fn next(&self, table: &MoveTable, move_index: usize) -> Self {
         let cp_index = table.cp[self.cp_index][move_index].into();
         let ep_index = table.ep[self.ep_index][move_index].into();
-        let e_ep_index = table.e_combo[self.e_ep_index][move_index].into();
+        let e_ep_index = table.e_ep[self.e_ep_index][move_index].into();
 
         Self {
             cp_index,
@@ -158,10 +158,16 @@ impl Solution {
             .collect::<Vec<String>>()
             .join(" ")
     }
+
+    pub fn get_all_moves(&self) -> Vec<Move> {
+        let mut solution = self.phase_1.clone();
+        solution.extend(&self.phase_2);
+        solution
+    }
 }
 
 pub struct Solver {
-    pub timeout: Duration,
+    pub timeout: Option<Duration>,
     move_table: MoveTable,
     pruning_table: PruningTable,
     max_length: u8,
@@ -172,14 +178,18 @@ pub struct Solver {
 }
 
 impl Solver {
-    pub fn new(max_length: u8, timeout: f32) -> Result<Self, io::Error> {
+    pub fn new(max_length: u8, timeout: Option<f32>) -> Result<Self, io::Error> {
         let (move_table, pruning_table) = read_table()?;
+        let timeout = match timeout {
+            Some(value) => Some(Duration::from_secs_f32(value)),
+            None => None,
+        };
 
         Ok(Self {
             move_table,
             pruning_table,
             max_length,
-            timeout: Duration::from_secs_f32(timeout),
+            timeout,
             initial_state: SOLVED_STATE,
             solution_phase_1: vec![],
             solution_phase_2: vec![],
@@ -193,9 +203,13 @@ impl Solver {
 
         for depth in 0..=self.max_length {
             let state = Phase1State::from(state);
-            self.solve_phase_1(state, depth, start);
+            let found = self.solve_phase_1(state, depth, start);
 
-            if start.elapsed() > self.timeout {
+            if let Some(timeout) = self.timeout {
+                if start.elapsed() > timeout {
+                    return self.best_solution.clone();
+                }
+            } else if found {
                 return self.best_solution.clone();
             }
         }
@@ -204,8 +218,10 @@ impl Solver {
     }
 
     fn solve_phase_1(&mut self, state: Phase1State, depth: u8, time: Instant) -> bool {
-        if time.elapsed() > self.timeout {
-            return true;
+        if let Some(timeout) = self.timeout {
+            if time.elapsed() > timeout {
+                return true;
+            }
         }
 
         if depth == 0 && state.is_solved() {
@@ -215,7 +231,7 @@ impl Solver {
             }
 
             let max_depth = match self.solution_phase_1.len() {
-                0 => 18,
+                0 => self.max_length,
                 _ => {
                     if self.max_length > self.solution_phase_1.len() as u8 {
                         self.max_length - self.solution_phase_1.len() as u8
@@ -260,8 +276,10 @@ impl Solver {
     }
 
     fn solve_phase_2(&mut self, state: Phase2State, depth: u8, time: Instant) -> bool {
-        if time.elapsed() > self.timeout {
-            return true;
+        if let Some(timeout) = self.timeout {
+            if time.elapsed() > timeout {
+                return true;
+            }
         }
 
         if depth == 0 && state.is_solved() {
@@ -310,5 +328,32 @@ impl Solver {
         }
 
         false
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use cube::{
+        moves::Move::*,
+        state::{State, SOLVED_STATE},
+    };
+
+    use crate::Solver;
+
+    #[test]
+    fn test_solve() {
+        let mut solver = Solver::new(23, None).unwrap();
+        let scramble = vec![
+            D3, R2, L3, U2, F, R, F3, D2, R2, F2, B2, U2, R2, F2, U, R2, U3, R2, D2,
+        ];
+        let state = State::from(&scramble);
+        let solution = solver.solve(state).unwrap();
+        let mut solved_state = state;
+
+        for m in solution.get_all_moves() {
+            solved_state = solved_state.apply_move(m);
+        }
+
+        assert_eq!(solved_state, SOLVED_STATE);
     }
 }

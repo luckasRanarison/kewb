@@ -1,4 +1,4 @@
-use std::io;
+use std::{io, time::Instant};
 
 use clap::{arg, Parser, Subcommand};
 use cube::{moves::scramble_from_string, state::State};
@@ -22,8 +22,8 @@ enum Commands {
         #[arg(short, long, default_value_t = 23)]
         max: u8,
 
-        #[arg(short, long, default_value_t = 1.0)]
-        timeout: f32,
+        #[arg(short, long)]
+        timeout: Option<f32>,
 
         #[arg(short, long)]
         details: bool,
@@ -49,8 +49,14 @@ fn main() -> Result<(), io::Error> {
     {
         let mut solver = Solver::new(*max, *timeout)?;
         let scramble_move = scramble_from_string(&scramble).unwrap();
+        let start = Instant::now();
         let solution = solver.solve(State::from(&scramble_move));
-        println!("Timeout: {:.2}s", solver.timeout.as_secs_f32());
+        let end = Instant::now();
+
+        match &solver.timeout {
+            Some(timeout) => println!("Timeout: {:.2}s", timeout.as_secs_f32()),
+            _ => println!("Finished in {}s", (end - start).as_secs_f32()),
+        }
 
         match solution {
             Some(value) => {
