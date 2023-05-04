@@ -2,7 +2,7 @@
 
 ## Description
 
-This is a Rubik's cube solver that uses Kociemba's two-phase algorithm (http://kociemba.org/cube.htm). However, please note that this is still a work in progress and the implementation is not yet efficient. The solver does not currently use symmetric reductions, pre-moves, or multi-threaded search.
+This is a Rubik's cube solver that uses Kociemba's [two-phase algorithm](http://kociemba.org/cube.htm). However, please note that this is still a work in progress and the implementation is not yet efficient. The solver does not currently use symmetric reductions, pre-moves, or multi-threaded search.
 
 ## Usage
 
@@ -41,7 +41,7 @@ cargo test --workspace --lib
 -   [ ] Algorithm optimization
 -   [ ] Server and webui
 
-# References
+## References
 
 -   Two phase algorithm overview: http://kociemba.org/cube.htm
 
