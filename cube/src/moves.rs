@@ -60,6 +60,24 @@ impl Move {
             _ => false,
         }
     }
+
+    pub fn get_inverse(self) -> Self {
+        match self {
+            U => U3,
+            U3 => U,
+            D => D3,
+            D3 => D,
+            R => R3,
+            R3 => R,
+            L => L3,
+            L3 => L,
+            F => F3,
+            F3 => F,
+            B => B3,
+            B3 => B,
+            _ => self,
+        }
+    }
 }
 
 pub fn is_move_available(prev: Move, current: Move) -> bool {

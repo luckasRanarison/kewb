@@ -4,8 +4,8 @@ use bincode::{config, decode_from_slice, encode_to_vec};
 
 use crate::{
     moves::{
-        get_co_table, get_cp_table, get_e_combo_table, get_e_ep_table, get_eo_table, get_ep_table,
-        MoveTable,
+        get_co_table, get_cp_table, get_e_combo_table, get_e_ep_table, get_eo_table,
+        get_ud_ep_table, MoveTable,
     },
     pruning::{get_prune_table, PruningTable},
     utils::{ALL_MOVES, PHASE2_MOVES},
@@ -18,7 +18,7 @@ pub fn write_move_table(path: &Path) -> Result<(), io::Error> {
     let eo = get_eo_table();
     let e_combo = get_e_combo_table();
     let cp = get_cp_table();
-    let ep = get_ep_table();
+    let ep = get_ud_ep_table();
     let e_ep = get_e_ep_table();
     let move_table = MoveTable {
         co,
@@ -49,7 +49,7 @@ pub fn write_pruning_table(path: &Path) -> Result<(), io::Error> {
     let co_e = get_prune_table(get_co_table, get_e_combo_table, &ALL_MOVES);
     let eo_e = get_prune_table(get_eo_table, get_e_combo_table, &ALL_MOVES);
     let cp_e = get_prune_table(get_cp_table, get_e_ep_table, &PHASE2_MOVES);
-    let ep_e = get_prune_table(get_ep_table, get_e_ep_table, &PHASE2_MOVES);
+    let ep_e = get_prune_table(get_ud_ep_table, get_e_ep_table, &PHASE2_MOVES);
     let pruning_table = PruningTable {
         co_e,
         eo_e,

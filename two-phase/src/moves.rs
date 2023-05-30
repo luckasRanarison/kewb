@@ -1,6 +1,6 @@
-use crate::{index::*, utils::*};
+use crate::utils::*;
 use bincode::{Decode, Encode};
-use cube::state::SOLVED_STATE;
+use cube::{index::*, state::SOLVED_STATE};
 
 #[derive(Encode, Decode)]
 pub struct MoveTable {
@@ -79,10 +79,10 @@ pub fn get_cp_table() -> Table<u16> {
     cp_table
 }
 
-pub fn get_ep_table() -> Table<u16> {
-    let mut ep_table = vec![vec![0; 10]; EP_COUNT as usize];
+pub fn get_ud_ep_table() -> Table<u16> {
+    let mut ep_table = vec![vec![0; 10]; UD_EP_COUNT as usize];
 
-    for i in 0..EP_COUNT {
+    for i in 0..UD_EP_COUNT {
         let ep = index_to_ud_ep(i);
         let mut state = SOLVED_STATE;
         state.ep = ep;

@@ -6,9 +6,9 @@ authors = ["LIOKA Ranraison Fiderana <luckasranarison@gmail.com>"]
 license = "MIT"
 
 [workspace]
-members = ["cube", "two-phase"]
+members = ["cube", "two-phase", "cli"]
 
 [dependencies]
-clap = { version = "4.2.5", features = ["derive"] }
+cli = { path = "cli" }
 cube = { path = "cube" }
 two-phase = { path = "two-phase" }

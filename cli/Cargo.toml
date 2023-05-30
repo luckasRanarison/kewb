@@ -1,0 +1,10 @@
+[package]
+name = "cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.2.5", features = ["derive"] }
+cube = { path = "../cube" }
+two-phase = { path = "../two-phase" }
+spinners = "4.1.0"

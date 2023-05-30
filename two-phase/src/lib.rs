@@ -1,27 +1,21 @@
 pub mod fs;
-pub mod index;
 pub mod moves;
 pub mod pruning;
 pub mod utils;
 
 use std::{
-    fmt, io,
+    fmt,
     time::{Duration, Instant},
 };
 
 use cube::{
+    index::*,
     moves::{is_move_available, Move},
     state::{State, SOLVED_STATE},
 };
-use index::{cp_to_index, e_ep_to_index, ud_ep_to_index};
 use utils::{ALL_MOVES, PHASE2_MOVES};
 
-use crate::{
-    fs::read_table,
-    index::{co_to_index, e_combo_to_index, eo_to_index},
-    moves::MoveTable,
-    pruning::PruningTable,
-};
+use crate::{moves::MoveTable, pruning::PruningTable};
 
 #[derive(Debug)]
 struct Phase1State {
@@ -166,10 +160,10 @@ impl Solution {
     }
 }
 
-pub struct Solver {
+pub struct Solver<'a> {
     pub timeout: Option<Duration>,
-    move_table: MoveTable,
-    pruning_table: PruningTable,
+    move_table: &'a MoveTable,
+    pruning_table: &'a PruningTable,
     max_length: u8,
     initial_state: State,
     solution_phase_1: Vec<Move>,
@@ -177,15 +171,19 @@ pub struct Solver {
     best_solution: Option<Solution>,
 }
 
-impl Solver {
-    pub fn new(max_length: u8, timeout: Option<f32>) -> Result<Self, io::Error> {
-        let (move_table, pruning_table) = read_table()?;
+impl<'a> Solver<'a> {
+    pub fn new(
+        move_table: &'a MoveTable,
+        pruning_table: &'a PruningTable,
+        max_length: u8,
+        timeout: Option<f32>,
+    ) -> Self {
         let timeout = match timeout {
             Some(value) => Some(Duration::from_secs_f32(value)),
             None => None,
         };
 
-        Ok(Self {
+        Self {
             move_table,
             pruning_table,
             max_length,
@@ -194,14 +192,14 @@ impl Solver {
             solution_phase_1: vec![],
             solution_phase_2: vec![],
             best_solution: None,
-        })
+        }
     }
 
     pub fn solve(&mut self, state: State) -> Option<Solution> {
         self.initial_state = state;
         let start = Instant::now();
 
-        for depth in 0..=self.max_length {
+        for depth in 0..self.max_length {
             let state = Phase1State::from(state);
             let found = self.solve_phase_1(state, depth, start);
 
@@ -241,7 +239,7 @@ impl Solver {
                 }
             };
 
-            for phase2_depth in 0..=max_depth {
+            for phase2_depth in 0..max_depth {
                 let state = Phase2State::from(cube_state);
                 if self.solve_phase_2(state, phase2_depth, time) {
                     return true;
@@ -338,21 +336,18 @@ mod test {
         state::{State, SOLVED_STATE},
     };
 
-    use crate::Solver;
+    use crate::{fs::read_table, Solver};
 
     #[test]
     fn test_solve() {
-        let mut solver = Solver::new(23, None).unwrap();
+        let (move_table, pruning_table) = read_table().unwrap();
+        let mut solver = Solver::new(&move_table, &pruning_table, 23, None);
         let scramble = vec![
             D3, R2, L3, U2, F, R, F3, D2, R2, F2, B2, U2, R2, F2, U, R2, U3, R2, D2,
         ];
         let state = State::from(&scramble);
         let solution = solver.solve(state).unwrap();
-        let mut solved_state = state;
-
-        for m in solution.get_all_moves() {
-            solved_state = solved_state.apply_move(m);
-        }
+        let solved_state = state.apply_moves(&solution.get_all_moves());
 
         assert_eq!(solved_state, SOLVED_STATE);
     }

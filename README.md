@@ -11,7 +11,11 @@ By default, there is no timeout, which means the solver will return the first so
 ```bash
 kewb help
 kewb solve --scramble "R U R' U'" --max 22 --timeout 1 --details
-kewb solve -s "R U R' U'" -m 22 -t 1 --d
+kewb solve -s "R U R' U'" -m 22 -t 1 -d
+# default values: max = 23, timeout = none, details = false
+kewb scramble
+kewb scramble -n 5
+# default values: number = 1
 # default values max: 23, timeout: none, details: false
 ```
 
@@ -37,7 +41,7 @@ cargo test --workspace --lib
 
 ## Todo
 
--   [ ] More CLI features
+-   [x] More CLI features
 -   [ ] Algorithm optimization
 -   [ ] Server and webui
 

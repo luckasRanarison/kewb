@@ -1,4 +1,4 @@
-use cube::state::{Corner, Edge};
+use crate::state::{Corner, Edge};
 
 pub fn co_to_index(corner: &[u8; 8]) -> u16 {
     let mut index: u16 = 0;
@@ -122,6 +122,37 @@ pub fn index_to_cp(mut index: u16) -> [Corner; 8] {
     cp.map(|value| Corner::try_from(value).unwrap())
 }
 
+pub fn ep_to_index(ep: &[Edge; 12]) -> u32 {
+    let mut index: u32 = 0;
+
+    for i in 0..12 {
+        index *= 12 - i as u32;
+        for j in i + 1..12 {
+            if ep[i] > ep[j] {
+                index += 1;
+            }
+        }
+    }
+
+    index
+}
+
+pub fn index_to_ep(mut index: u32) -> [Edge; 12] {
+    let mut ep = [0; 12];
+
+    for i in (0..11).rev() {
+        ep[i] = (index % (12 - i as u32)) as u8;
+        index /= 12 - i as u32;
+        for j in (i + 1)..12 {
+            if ep[j] >= ep[i] {
+                ep[j] += 1;
+            }
+        }
+    }
+
+    ep.map(|value| Edge::try_from(value).unwrap())
+}
+
 pub fn ud_ep_to_index(ep: &[Edge; 12]) -> u16 {
     let mut index: u16 = 0;
     let slice = &ep[4..12];
@@ -192,7 +223,7 @@ pub fn index_to_e_ep(mut index: u16) -> [Edge; 12] {
 mod test {
     use super::{co_to_index, index_to_co};
     use crate::index::*;
-    use cube::state::{Edge::*, SOLVED_STATE};
+    use crate::state::{Edge::*, SOLVED_STATE};
 
     #[test]
     fn test_co_to_index() {
@@ -237,7 +268,7 @@ mod test {
     }
 
     #[test]
-    fn test_ep() {
+    fn test_ud_ep() {
         assert_eq!(ud_ep_to_index(&SOLVED_STATE.ep), 0);
         assert_eq!(index_to_ud_ep(0), SOLVED_STATE.ep);
 
@@ -254,5 +285,16 @@ mod test {
         let edges = [FL, FR, BR, BL, UB, UR, UF, UL, DF, DR, DB, DL];
         assert_eq!(e_ep_to_index(&edges), 23);
         assert_eq!(index_to_e_ep(23), edges);
+    }
+
+    #[test]
+    fn test_ep() {
+        assert_eq!(ep_to_index(&SOLVED_STATE.ep), 0);
+        assert_eq!(index_to_ep(0), SOLVED_STATE.ep);
+
+        let mut edges = SOLVED_STATE.ep;
+        edges.reverse();
+        assert_eq!(ep_to_index(&edges), 479001599);
+        assert_eq!(index_to_ep(479001599), edges);
     }
 }

@@ -112,6 +112,48 @@ impl State {
 
         self * move_state
     }
+
+    pub fn apply_moves(&self, moves: &Vec<Move>) -> Self {
+        let mut state = self.clone();
+
+        for m in moves {
+            state = state.apply_move(*m);
+        }
+
+        state
+    }
+
+    pub fn count_corner_perm(&self) -> u8 {
+        let mut count = 0;
+        let mut cp = self.cp;
+
+        for i in 0..8 {
+            if cp[i] as usize != i {
+                if let Some(j) = (i + 1..8).find(|&j| cp[j] as usize == i) {
+                    cp.swap(i, j);
+                    count += 1;
+                }
+            }
+        }
+
+        count
+    }
+
+    pub fn count_edge_perm(&self) -> u8 {
+        let mut count = 0;
+        let mut ep = self.ep;
+
+        for i in 0..12 {
+            if ep[i] as usize != i {
+                if let Some(j) = (i + 1..12).find(|&j| ep[j] as usize == i) {
+                    ep.swap(i, j);
+                    count += 1;
+                }
+            }
+        }
+
+        count
+    }
 }
 
 impl From<&Vec<Move>> for State {
@@ -162,14 +204,10 @@ mod test {
     #[test]
     fn test_move_sequence() {
         // (R U R' U') * 6
-        let moves = [
+        let moves = vec![
             R, U, R3, U3, R, U, R3, U3, R, U, R3, U3, R, U, R3, U3, R, U, R3, U3, R, U, R3, U3,
         ];
-        let mut state = SOLVED_STATE;
-
-        for m in moves {
-            state = state.apply_move(m);
-        }
+        let state = SOLVED_STATE.apply_moves(&moves);
 
         assert_eq!(state, SOLVED_STATE);
     }
@@ -177,14 +215,10 @@ mod test {
     #[test]
     fn test_scramble() {
         // U F' D' F2 D B2 D' R2 U' F2 R2 D2 R2 U' L B L R F' D B'
-        let scramble = [
+        let scramble = vec![
             U, F3, D3, F2, D, B2, D3, R2, U3, F2, R2, D2, R2, U3, L, B, L, R, F3, D, B3,
         ];
-        let mut state = SOLVED_STATE;
-
-        for m in scramble {
-            state = state.apply_move(m);
-        }
+        let state = SOLVED_STATE.apply_moves(&scramble);
 
         let expected = State {
             cp: [DFL, UBL, DFR, UBR, UFL, DBR, DBL, UFR],
@@ -194,5 +228,24 @@ mod test {
         };
 
         assert_eq!(state, expected);
+    }
+
+    #[test]
+    fn test_perm_count() {
+        let state = SOLVED_STATE;
+
+        assert_eq!(state.count_corner_perm(), 0);
+        assert_eq!(state.count_edge_perm(), 0);
+
+        let state = State::from(&vec![R, U, R3, U3]);
+
+        assert_eq!(state.count_corner_perm(), 2);
+        assert_eq!(state.count_edge_perm(), 2);
+        let state = State::from(&vec![
+            R, U3, R3, U3, R, U, R, D, R3, U3, R, D3, R3, U2, R3, U3,
+        ]);
+
+        assert_eq!(state.count_corner_perm(), 1);
+        assert_eq!(state.count_edge_perm(), 1);
     }
 }
