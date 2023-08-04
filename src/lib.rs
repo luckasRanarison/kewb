@@ -1,7 +1,7 @@
 pub(crate) mod cube;
 pub(crate) mod two_phase;
 
-pub use cube::{moves::Move, state::State};
+pub use cube::{moves::Move, state::State, facelet::FaceCube};
 pub use two_phase::solver::{solve, Solution, Solver};
 
 pub mod fs {
