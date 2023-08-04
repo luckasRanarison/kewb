@@ -1,8 +1,0 @@
-[package]
-name = "two-phase"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-cube = { path = "../cube" }
-bincode = { version = "2.0.0-rc", features = ["serde"] }

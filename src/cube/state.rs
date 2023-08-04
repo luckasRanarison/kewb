@@ -1,5 +1,5 @@
 use self::{Corner::*, Edge::*, Move::*};
-use crate::moves::*;
+use super::moves::*;
 use std::ops::Mul;
 
 #[rustfmt::skip]
@@ -178,7 +178,7 @@ pub const SOLVED_STATE: State = State {
 #[cfg(test)]
 mod test {
     use super::{Corner::*, Edge::*, Move::*, SOLVED_STATE};
-    use crate::{moves::*, state::State};
+    use crate::cube::{moves::*, state::State};
 
     #[test]
     fn test_mult() {

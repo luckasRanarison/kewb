@@ -131,27 +131,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a2dd5a6fe8c6e3502f568a6353e5273bbb15193ad9a89e457b9970798efbea1"
 
 [[package]]
-name = "cli"
-version = "0.1.0"
-dependencies = [
- "clap",
- "cube",
- "spinners",
- "two-phase",
-]
-
-[[package]]
 name = "colorchoice"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "acbf1af155f9b9ef647e42cdc158db4b64a1b61f743629225fde6f3e0be2a7c7"
-
-[[package]]
-name = "cube"
-version = "0.1.0"
-dependencies = [
- "rand",
-]
 
 [[package]]
 name = "errno"
@@ -224,9 +207,10 @@ dependencies = [
 name = "kewb"
 version = "0.1.0"
 dependencies = [
- "cli",
- "cube",
- "two-phase",
+ "bincode",
+ "clap",
+ "rand",
+ "spinners",
 ]
 
 [[package]]
@@ -398,14 +382,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "two-phase"
-version = "0.1.0"
-dependencies = [
- "bincode",
- "cube",
 ]
 
 [[package]]

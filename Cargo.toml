@@ -5,10 +5,8 @@ edition = "2021"
 authors = ["LIOKA Ranraison Fiderana <luckasranarison@gmail.com>"]
 license = "MIT"
 
-[workspace]
-members = ["cube", "two-phase", "cli"]
-
 [dependencies]
-cli = { path = "cli" }
-cube = { path = "cube" }
-two-phase = { path = "two-phase" }
+rand = "0.8.3"
+bincode = { version = "2.0.0-rc", features = ["serde"] }
+clap = { version = "4.2.5", features = ["derive"] }
+spinners = "4.1.0"

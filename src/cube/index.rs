@@ -1,4 +1,4 @@
-use crate::state::{Corner, Edge};
+use super::state::{Corner, Edge};
 
 pub fn co_to_index(corner: &[u8; 8]) -> u16 {
     let mut index: u16 = 0;
@@ -221,9 +221,8 @@ pub fn index_to_e_ep(mut index: u16) -> [Edge; 12] {
 
 #[cfg(test)]
 mod test {
-    use super::{co_to_index, index_to_co};
-    use crate::index::*;
-    use crate::state::{Edge::*, SOLVED_STATE};
+    use super::*;
+    use crate::cube::state::{Edge::*, SOLVED_STATE};
 
     #[test]
     fn test_co_to_index() {

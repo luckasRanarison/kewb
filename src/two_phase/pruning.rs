@@ -1,7 +1,6 @@
+use super::{moves::*, utils::*};
+use crate::cube::moves::Move;
 use bincode::{Decode, Encode};
-use cube::moves::Move;
-
-use crate::utils::*;
 
 #[derive(Encode, Decode)]
 pub struct PruningTable {
@@ -9,6 +8,17 @@ pub struct PruningTable {
     pub eo_e: Table<u8>,
     pub cp_e: Table<u8>,
     pub ep_e: Table<u8>,
+}
+
+impl PruningTable {
+    pub fn new() -> Self {
+        Self {
+            co_e: get_prune_table(get_co_table, get_e_combo_table, &ALL_MOVES),
+            eo_e: get_prune_table(get_eo_table, get_e_combo_table, &ALL_MOVES),
+            cp_e: get_prune_table(get_cp_table, get_e_ep_table, &PHASE2_MOVES),
+            ep_e: get_prune_table(get_ud_ep_table, get_e_ep_table, &PHASE2_MOVES),
+        }
+    }
 }
 
 pub type TableGetter = fn() -> Table<u16>;

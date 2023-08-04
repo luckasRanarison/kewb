@@ -1,7 +1,7 @@
 use std::fmt;
 
 use self::Move::*;
-use crate::state::{Corner::*, Edge::*, State};
+use super::state::{Corner::*, Edge::*, State};
 
 #[rustfmt::skip]
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -17,24 +17,13 @@ pub enum Move {
 impl fmt::Display for Move {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            U => write!(f, "U"),
-            U2 => write!(f, "U2"),
             U3 => write!(f, "U'"),
-            D => write!(f, "D"),
-            D2 => write!(f, "D2"),
             D3 => write!(f, "D'"),
-            R => write!(f, "R"),
-            R2 => write!(f, "R2"),
             R3 => write!(f, "R'"),
-            L => write!(f, "L"),
-            L2 => write!(f, "L2"),
             L3 => write!(f, "L'"),
-            F => write!(f, "F"),
-            F2 => write!(f, "F2"),
             F3 => write!(f, "F'"),
-            B => write!(f, "B"),
-            B2 => write!(f, "B2"),
             B3 => write!(f, "B'"),
+            _ => write!(f, "{:?}", self),
         }
     }
 }

@@ -1,4 +1,4 @@
-use crate::{
+use super::{
     index::{index_to_co, index_to_cp, index_to_eo, index_to_ep},
     state::State,
 };

@@ -1,6 +1,6 @@
-use crate::utils::*;
+use super::utils::*;
+use crate::cube::{index::*, state::SOLVED_STATE};
 use bincode::{Decode, Encode};
-use cube::{index::*, state::SOLVED_STATE};
 
 #[derive(Encode, Decode)]
 pub struct MoveTable {
@@ -10,6 +10,19 @@ pub struct MoveTable {
     pub cp: Table<u16>,
     pub ep: Table<u16>,
     pub e_ep: Table<u16>,
+}
+
+impl MoveTable {
+    pub fn new() -> Self {
+        Self {
+            co: get_co_table(),
+            eo: get_eo_table(),
+            e_combo: get_e_combo_table(),
+            cp: get_cp_table(),
+            ep: get_ud_ep_table(),
+            e_ep: get_e_ep_table(),
+        }
+    }
 }
 
 pub fn get_co_table() -> Table<u16> {
