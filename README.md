@@ -7,6 +7,8 @@ This is a Rubik's cube solver that uses Kociemba's [two-phase algorithm](http://
 
 ## Usage
 
+### CLI
+
 By default, there is no timeout, which means the solver will return the first solution it finds. However, by adding a timeout, the solver will continue searching until the timeout has elapsed and return the shortest solution found or nothing. Specifying a lower search depth can result in better solution quality (around 21 to 23 moves), but it can also make the search slower if the depth is less than 20 moves. Nevertheless, it has been proven that all cases can be solved in [20 moves or fewer](https://www.cube20.org/).
 
 ```bash
@@ -17,6 +19,36 @@ kewb solve -s "R U R' U'" -m 22 -t 1 -d
 kewb scramble
 kewb scramble -n 5
 # default values: number = 1
+```
+
+### Library
+
+```rust
+use std::io;
+use kewb::{
+    solve, Solver, State, FaceCube,
+    fs::read_table,
+    utils::scramble_from_string,
+};
+
+fn main() -> Result<(), io::Error> {
+    let scramble = scramble_from_string("R U R' U'").unwrap();
+    let state = State::from(&scramble);
+    let solution = solve(state, 23, None).unwrap();
+
+    println!("{}", solution);
+
+    let faces = "DRBLUURLDRBLRRBFLFFUBFFDRUDURRBDFBBULDUDLUDLBUFFDBFLRL";
+    let face_cube = FaceCube::try_from(faces).unwrap();
+    let state = State::try_from(&face_cube).unwrap();
+    let (move_table, pruning_table) = read_table()?;
+    let mut solver = Solver::new(&move_table, &pruning_table, 23, None);
+    let solution = solver.solve(state).unwrap();
+
+    println!("{}", solution);
+
+    Ok(())
+}
 ```
 
 ## Build
@@ -41,12 +73,12 @@ cargo test
 
 ## Todo
 
--   [ ] Add Documentation
--   [ ] More CLI features
--   [ ] Algorithm optimization
+- [x] Add Documentation
+- [ ] More CLI features
+- [ ] Algorithm optimization
 
 ## References
 
--   Two phase algorithm overview: http://kociemba.org/cube.htm
+- Two phase algorithm overview: http://kociemba.org/cube.htm
 
--   Two phase algorithm implementation in python: https://qiita.com/7y2n/items/55abb991a45ade2afa28
+- Two phase algorithm implementation in python: https://qiita.com/7y2n/items/55abb991a45ade2afa28
