@@ -2,6 +2,7 @@ use super::utils::*;
 use crate::cube::{index::*, state::SOLVED_STATE};
 use bincode::{Decode, Encode};
 
+/// Collection of moves table for navigating on the coordinate level.
 #[derive(Encode, Decode)]
 pub struct MoveTable {
     pub co: Table<u16>,

@@ -2,6 +2,7 @@ use super::{moves::*, utils::*};
 use crate::cube::moves::Move;
 use bincode::{Decode, Encode};
 
+/// Collection of pruning table for filtering unsolvable state at a given depth.
 #[derive(Encode, Decode)]
 pub struct PruningTable {
     pub co_e: Table<u8>,
