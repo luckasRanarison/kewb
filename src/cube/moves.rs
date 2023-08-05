@@ -3,6 +3,8 @@ use std::fmt;
 use self::Move::*;
 use super::state::{Corner::*, Edge::*, State};
 
+/// Layer moves, Up, Down, Right, Left, Face, Back.
+/// $ clockwise, $2 double, $3 counter-clockwise.
 #[rustfmt::skip]
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Move {

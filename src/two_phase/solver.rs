@@ -16,6 +16,12 @@ use super::moves::MoveTable;
 use super::pruning::PruningTable;
 use super::utils::{ALL_MOVES, PHASE2_MOVES};
 
+trait Phase {
+    fn is_solved(&self) -> bool;
+    fn next(&self, table: &MoveTable, move_index: usize) -> Self;
+    fn prune(&self, table: &PruningTable, depth: u8) -> bool;
+}
+
 #[derive(Debug)]
 struct Phase1State {
     co_index: usize,
@@ -23,7 +29,7 @@ struct Phase1State {
     e_combo_index: usize,
 }
 
-impl Phase1State {
+impl Phase for Phase1State {
     fn is_solved(&self) -> bool {
         self.co_index == 0 && self.eo_index == 0 && self.e_combo_index == 0
     }
@@ -83,7 +89,7 @@ impl From<State> for Phase2State {
     }
 }
 
-impl Phase2State {
+impl Phase for Phase2State {
     fn is_solved(&self) -> bool {
         self.cp_index == 0 && self.ep_index == 0 && self.e_ep_index == 0
     }
@@ -109,6 +115,7 @@ impl Phase2State {
     }
 }
 
+/// Two phase solution.
 #[derive(Debug, Clone)]
 pub struct Solution {
     pub phase_1: Vec<Move>,
@@ -159,6 +166,7 @@ impl Solution {
     }
 }
 
+/// Two phase solver struct for more control.
 pub struct Solver<'a> {
     move_table: &'a MoveTable,
     pruning_table: &'a PruningTable,
@@ -194,6 +202,7 @@ impl<'a> Solver<'a> {
         }
     }
 
+    /// Solves the cube using the two phase algorithm.
     pub fn solve(&mut self, state: State) -> Option<Solution> {
         self.initial_state = state;
 
@@ -332,6 +341,7 @@ impl<'a> Solver<'a> {
     }
 }
 
+/// Solves a state state using the two phase algorithm, shorthand for `solver_instance.solve()`.
 pub fn solve(state: State, max_length: u8, timeout: Option<f32>) -> Option<Solution> {
     let (move_table, pruning_table) = read_table().unwrap();
     let mut solver = Solver::new(&move_table, &pruning_table, max_length, timeout);

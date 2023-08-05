@@ -5,6 +5,8 @@ use super::facelet::Facelet;
 use super::moves::*;
 use std::ops::Mul;
 
+/// Represents the 8 corners on the cube, described by the layer they are on.
+/// Example: UBL (Up, Bottom, Left).
 #[rustfmt::skip]
 #[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 pub enum Corner {
@@ -30,6 +32,8 @@ impl TryFrom<u8> for Corner {
     }
 }
 
+/// Represents the 12 edges on the cube, described by the layer they are on.
+/// Example: BL (Bottom, Left).
 #[rustfmt::skip]
 #[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 pub enum Edge {
@@ -60,11 +64,16 @@ impl TryFrom<u8> for Edge {
     }
 }
 
+/// Cube on the cubie level.
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct State {
+    /// Corner permutation, relative to SOLVED_STATE.
     pub cp: [Corner; 8],
+    /// Corner orientation, 3 possible values: 0 (correctly oriented), 1 (twisted clockwise), 2 (twisted counter-clockwise).
     pub co: [u8; 8],
+    /// Edge permutation, relative to SOLVED_STATE.
     pub ep: [Edge; 12],
+    /// Edge orientation, 2 possible values: 0 (correctly oriented), 1 (flipped).
     pub eo: [u8; 12],
 }
 
@@ -126,6 +135,7 @@ impl State {
         state
     }
 
+    /// Returns the number of corner permutations needed to solve the corners.
     pub fn count_corner_perm(&self) -> u8 {
         let mut count = 0;
         let mut cp = self.cp;
@@ -142,6 +152,7 @@ impl State {
         count
     }
 
+    /// Returns the number of edge permutations needed to solve the edges.
     pub fn count_edge_perm(&self) -> u8 {
         let mut count = 0;
         let mut ep = self.ep;
