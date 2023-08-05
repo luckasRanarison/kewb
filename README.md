@@ -1,8 +1,9 @@
 # Kewb
 
-## Description
+[![Build/test](https://github.com/luckasRanarison/kewb/actions/workflows/rust.yml/badge.svg)](https://github.com/luckasRanarison/kewb/actions/workflows/rust.yml)
+[![crates.io](https://img.shields.io/crates/v/kewb)](https://crates.io/crates/kewb)
 
-This is a Rubik's cube solver that uses Kociemba's [two-phase algorithm](http://kociemba.org/cube.htm). However, please note that this is still a work in progress and the implementation is not yet efficient. The solver does not currently use symmetric reductions, pre-moves, or multi-threaded search.
+This is a Rubik's cube solver that uses Kociemba's [two-phase algorithm](http://kociemba.org/cube.htm) and can also be used as a library for manipulating the 3x3 Rubik's cube. However, please note that this is still a work in progress and the implementation is not yet efficient. The solver does not currently use symmetric reductions, pre-moves, or multi-threaded search.
 
 ## Usage
 
@@ -16,7 +17,6 @@ kewb solve -s "R U R' U'" -m 22 -t 1 -d
 kewb scramble
 kewb scramble -n 5
 # default values: number = 1
-# default values max: 23, timeout: none, details: false
 ```
 
 ## Build
@@ -36,14 +36,14 @@ cargo install --path . # install to ~/.cargo/bin/
 You can run the tests by running:
 
 ```bash
-cargo test --workspace --lib
+cargo test
 ```
 
 ## Todo
 
--   [x] More CLI features
+-   [ ] Add Documentation
+-   [ ] More CLI features
 -   [ ] Algorithm optimization
--   [ ] Server and webui
 
 ## References
 
