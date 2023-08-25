@@ -19,6 +19,7 @@ kewb solve -s "R U R' U'" -m 22 -t 1 -d
 kewb scramble
 kewb scramble -n 5
 # default values: number = 1
+kewb solve --facelet DRBLUURLDRBLRRBFLFFUBFFDRUDURRBDFBBULDUDLUDLBUFFDBFLRL
 ```
 
 ### Library
