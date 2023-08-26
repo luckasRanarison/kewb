@@ -1,9 +1,12 @@
 [package]
 name = "kewb"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "A crate for manipulating and solving a 3x3 rubik's cube with Kociemba two phase algorithm"
-authors = ["LIOKA Ranraison Fiderana <luckasranarison@gmail.com>"]
+authors = [
+  "LIOKA Ranraison Fiderana <luckasranarison@gmail.com>",
+  "Miklos Vajna <vmiklos@vmiklos.hu>",
+]
 repository = "https://github.com/luckasRanarison/kewb"
 keywords = ["rubiks-cube", "cube-solver", "kociemba", "two-phase"]
 categories = ["algorithms"]
