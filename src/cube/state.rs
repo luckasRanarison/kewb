@@ -1,8 +1,5 @@
 use self::{Corner::*, Edge::*, Move::*};
-use super::facelet::Color;
-use super::facelet::FaceCube;
-use super::facelet::Facelet;
-use super::moves::*;
+use super::{facelet::*, moves::*};
 use std::ops::Mul;
 
 /// Represents the 8 corners on the cube, described by the layer they are on.
@@ -182,62 +179,6 @@ impl From<&Vec<Move>> for State {
     }
 }
 
-/// Map the corner positions to facelet positions.
-const CORNER_FACELET: [[Facelet; 3]; 8] = [
-    /*UBL=*/ [Facelet::U1, Facelet::L1, Facelet::B3],
-    /*UBR=*/ [Facelet::U3, Facelet::B1, Facelet::R3],
-    /*UFR=*/ [Facelet::U9, Facelet::R1, Facelet::F3],
-    /*UFL=*/ [Facelet::U7, Facelet::F1, Facelet::L3],
-    /*DFL=*/ [Facelet::D1, Facelet::L9, Facelet::F7],
-    /*DFR=*/ [Facelet::D3, Facelet::F9, Facelet::R7],
-    /*DBR=*/ [Facelet::D9, Facelet::R9, Facelet::B7],
-    /*DBL=*/ [Facelet::D7, Facelet::B9, Facelet::L7],
-];
-
-/// Map the edge positions to facelet positions.
-const EDGE_FACELET: [[Facelet; 2]; 12] = [
-    /*BL=*/ [Facelet::B6, Facelet::L4],
-    /*BR=*/ [Facelet::B4, Facelet::R6],
-    /*FR=*/ [Facelet::F6, Facelet::R4],
-    /*FL=*/ [Facelet::F4, Facelet::L6],
-    /*UB=*/ [Facelet::U2, Facelet::B2],
-    /*UR=*/ [Facelet::U6, Facelet::R2],
-    /*UF=*/ [Facelet::U8, Facelet::F2],
-    /*UL=*/ [Facelet::U4, Facelet::L2],
-    /*DF=*/ [Facelet::D2, Facelet::F8],
-    /*DR=*/ [Facelet::D6, Facelet::R8],
-    /*DB=*/ [Facelet::D8, Facelet::B8],
-    /*DL=*/ [Facelet::D4, Facelet::L8],
-];
-
-/// Map the corner positions to facelet colors.
-const CORNER_COLOR: [[Color; 3]; 8] = [
-    /*UBL=*/ [Color::U, Color::L, Color::B],
-    /*UBR=*/ [Color::U, Color::B, Color::R],
-    /*UFR=*/ [Color::U, Color::R, Color::F],
-    /*UFL=*/ [Color::U, Color::F, Color::L],
-    /*DFL=*/ [Color::D, Color::L, Color::F],
-    /*DFR=*/ [Color::D, Color::F, Color::R],
-    /*DBR=*/ [Color::D, Color::R, Color::B],
-    /*DBL=*/ [Color::D, Color::B, Color::L],
-];
-
-/// Map the edge positions to facelet colors.
-const EDGE_COLOR: [[Color; 2]; 12] = [
-    /*BL=*/ [Color::B, Color::L],
-    /*BR=*/ [Color::B, Color::R],
-    /*FR=*/ [Color::F, Color::R],
-    /*FL=*/ [Color::F, Color::L],
-    /*UB=*/ [Color::U, Color::B],
-    /*UR=*/ [Color::U, Color::R],
-    /*UF=*/ [Color::U, Color::F],
-    /*UL=*/ [Color::U, Color::L],
-    /*DF=*/ [Color::D, Color::F],
-    /*DR=*/ [Color::D, Color::R],
-    /*DB=*/ [Color::D, Color::B],
-    /*DL=*/ [Color::D, Color::L],
-];
-
 /// Gives State (cubie) representation of a face cube (facelet).
 impl TryFrom<&FaceCube> for State {
     type Error = String;
@@ -246,6 +187,7 @@ impl TryFrom<&FaceCube> for State {
         let mut state = SOLVED_STATE;
         let mut col1;
         let mut col2;
+
         for i in 0..8 {
             let i = Corner::try_from(i).unwrap();
             // get the colors of the cubie at corner i, starting with U/D
@@ -257,8 +199,10 @@ impl TryFrom<&FaceCube> for State {
                     break;
                 }
             }
+
             col1 = face_cube.f[CORNER_FACELET[i as usize][(ori + 1) % 3] as usize];
             col2 = face_cube.f[CORNER_FACELET[i as usize][(ori + 2) % 3] as usize];
+
             for j in 0..8 {
                 let j = Corner::try_from(j).unwrap();
                 if col1 == CORNER_COLOR[j as usize][1] && col2 == CORNER_COLOR[j as usize][2] {
@@ -269,6 +213,7 @@ impl TryFrom<&FaceCube> for State {
                 }
             }
         }
+
         for i in 0..12 {
             let i = Edge::try_from(i).unwrap();
             for j in 0..12 {
@@ -291,7 +236,15 @@ impl TryFrom<&FaceCube> for State {
                 }
             }
         }
-        Ok(state)
+
+        let c_perm = state.count_corner_perm();
+        let e_perm = state.count_edge_perm();
+
+        if c_perm % 2 != e_perm % 2 {
+            Err("Invalid facelet representation".to_owned())
+        } else {
+            Ok(state)
+        }
     }
 }
 
