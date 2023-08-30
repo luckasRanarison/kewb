@@ -1,4 +1,4 @@
-use std::{io, time::Instant};
+use std::{fmt, io, time::Instant};
 
 use clap::{arg, command, Parser, Subcommand};
 use kewb::{
@@ -25,10 +25,10 @@ enum Commands {
         .args(&["scramble", "facelet"]),
     ))]
     Solve {
-        #[arg(short, long, value_parser = validate_scramble)]
+        #[arg(short, long)]
         scramble: Option<String>,
 
-        #[arg(short, long, value_parser = validate_facelet)]
+        #[arg(short, long)]
         facelet: Option<String>,
 
         #[arg(short, long, default_value_t = 23)]
@@ -46,6 +46,30 @@ enum Commands {
         #[arg(short, long, default_value_t = 1)]
         number: usize,
     },
+}
+
+enum SolverError {
+    InvalidScramble,
+    InvalidFaceletString,
+    InvalidFaceletValue,
+    IOError(io::Error),
+}
+
+impl From<io::Error> for SolverError {
+    fn from(value: io::Error) -> Self {
+        Self::IOError(value)
+    }
+}
+
+impl fmt::Display for SolverError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidScramble => write!(f, "Invalid scramble"),
+            Self::InvalidFaceletString => write!(f, "Invalid facelet string"),
+            Self::InvalidFaceletValue => write!(f, "Invalid facelet reperesentation"),
+            Self::IOError(value) => value.fmt(f),
+        }
+    }
 }
 
 fn solve_state(
@@ -79,6 +103,7 @@ fn solve_state(
         }
         None => println!("No solution found"),
     }
+
     Ok(())
 }
 
@@ -87,10 +112,13 @@ fn solve_scramble(
     max: u8,
     timeout: Option<f32>,
     details: bool,
-) -> Result<(), io::Error> {
-    let scramble_moves = scramble_from_string(scramble).unwrap();
-    let state = State::from(&scramble_moves);
-    solve_state(state, max, timeout, details)
+) -> Result<(), SolverError> {
+    if let Some(scramble) = scramble_from_string(scramble) {
+        let state = State::from(&scramble);
+        Ok(solve_state(state, max, timeout, details)?)
+    } else {
+        Err(SolverError::InvalidScramble)
+    }
 }
 
 fn solve_facelet(
@@ -98,10 +126,15 @@ fn solve_facelet(
     max: u8,
     timeout: Option<f32>,
     details: bool,
-) -> Result<(), io::Error> {
-    let face_cube = kewb::FaceCube::try_from(facelet).unwrap();
-    let state = kewb::State::try_from(&face_cube).unwrap();
-    solve_state(state, max, timeout, details)
+) -> Result<(), SolverError> {
+    if let Ok(face_cube) = FaceCube::try_from(facelet) {
+        match State::try_from(&face_cube) {
+            Ok(state) => Ok(solve_state(state, max, timeout, details)?),
+            Err(_) => Err(SolverError::InvalidFaceletValue),
+        }
+    } else {
+        Err(SolverError::InvalidFaceletString)
+    }
 }
 
 fn scramble(number: usize) -> Result<(), io::Error> {
@@ -142,20 +175,6 @@ fn scramble(number: usize) -> Result<(), io::Error> {
     Ok(())
 }
 
-fn validate_scramble(scramble: &str) -> Result<String, String> {
-    match scramble_from_string(&scramble) {
-        Some(_) => Ok(scramble.to_owned()),
-        None => Err("Invalid scramble".to_owned()),
-    }
-}
-
-fn validate_facelet(faces: &str) -> Result<String, String> {
-    match FaceCube::try_from(faces) {
-        Ok(_) => Ok(faces.to_owned()),
-        Err(_) => Err("Invalid facelet string".to_owned()),
-    }
-}
-
 fn main() -> Result<(), io::Error> {
     let program = Cli::parse();
 
@@ -167,12 +186,19 @@ fn main() -> Result<(), io::Error> {
             facelet,
             details,
         }) => {
+            let mut error = None;
+
             if let Some(scramble) = scramble {
-                return solve_scramble(scramble, *max, *timeout, *details);
+                error = solve_scramble(scramble, *max, *timeout, *details).err()
             } else if let Some(facelet) = facelet {
-                return solve_facelet(facelet, *max, *timeout, *details);
+                error = solve_facelet(facelet, *max, *timeout, *details).err()
             }
-            unreachable!();
+
+            if let Some(error) = error {
+                println!("error: {}", error);
+            }
+
+            Ok(())
         }
         Some(Commands::Scramble { number }) => scramble(*number),
         _ => Ok(()),
