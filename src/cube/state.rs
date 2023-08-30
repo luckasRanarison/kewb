@@ -189,7 +189,7 @@ impl TryFrom<&FaceCube> for State {
         let mut col2;
 
         for i in 0..8 {
-            let i = Corner::try_from(i).unwrap();
+            let i = Corner::try_from(i)?;
             // get the colors of the cubie at corner i, starting with U/D
             for index in 0..3 {
                 ori = index;
@@ -204,7 +204,7 @@ impl TryFrom<&FaceCube> for State {
             col2 = face_cube.f[CORNER_FACELET[i as usize][(ori + 2) % 3] as usize];
 
             for j in 0..8 {
-                let j = Corner::try_from(j).unwrap();
+                let j = Corner::try_from(j)?;
                 if col1 == CORNER_COLOR[j as usize][1] && col2 == CORNER_COLOR[j as usize][2] {
                     // in cornerposition i we have cornercubie j
                     state.cp[i as usize] = j;
@@ -215,9 +215,9 @@ impl TryFrom<&FaceCube> for State {
         }
 
         for i in 0..12 {
-            let i = Edge::try_from(i).unwrap();
+            let i = Edge::try_from(i)?;
             for j in 0..12 {
-                let j = Edge::try_from(j).unwrap();
+                let j = Edge::try_from(j)?;
                 if face_cube.f[EDGE_FACELET[i as usize][0] as usize] == EDGE_COLOR[j as usize][0]
                     && face_cube.f[EDGE_FACELET[i as usize][1] as usize]
                         == EDGE_COLOR[j as usize][1]

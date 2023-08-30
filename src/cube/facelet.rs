@@ -45,7 +45,7 @@ impl TryFrom<&str> for FaceCube {
         let mut f: [Color; 54] = SOLVED_FACE_CUBE.f;
 
         for (i, c) in cube_string.chars().enumerate() {
-            f[i] = Color::try_from(c).unwrap();
+            f[i] = Color::try_from(c)?;
         }
 
         Ok(FaceCube { f })

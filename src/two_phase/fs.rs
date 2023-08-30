@@ -56,7 +56,7 @@ pub fn read_table() -> Result<(MoveTable, PruningTable), io::Error> {
     }
 
     let config = config::standard();
-    let encoded = fs::read(&current_path.join("cache/move_table.bin")).unwrap();
+    let encoded = fs::read(&current_path.join("cache/move_table.bin"))?;
     let (move_table, _) = decode_from_slice(&encoded, config).unwrap();
 
     if !fs::metadata(&current_path.join("cache/pruning_table.bin")).is_ok() {
@@ -64,7 +64,7 @@ pub fn read_table() -> Result<(MoveTable, PruningTable), io::Error> {
         write_pruning_table(current_path)?;
     }
 
-    let encoded = fs::read(&current_path.join("cache/pruning_table.bin")).unwrap();
+    let encoded = fs::read(&current_path.join("cache/pruning_table.bin"))?;
     let (pruning_table, _) = decode_from_slice(&encoded, config).unwrap();
 
     Ok((move_table, pruning_table))
