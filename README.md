@@ -24,6 +24,8 @@ kewb solve --facelet DRBLUURLDRBLRRBFLFFUBFFDRUDURRBDFBBULDUDLUDLBUFFDBFLRL
 
 ### Library
 
+https://docs.rs/kewb/latest/kewb/
+
 ```rust
 use std::io;
 use kewb::{
