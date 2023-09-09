@@ -32,18 +32,19 @@ use kewb::{
     solve, Solver, State, FaceCube,
     fs::read_table,
     utils::scramble_from_string,
+    error::Error,
 };
 
-fn main() -> Result<(), io::Error> {
-    let scramble = scramble_from_string("R U R' U'").unwrap();
+fn main() -> Result<(), Error> {
+    let scramble = scramble_from_string("R U R' U'").unwrap(); // vec![R, U, R3, U3]
     let state = State::from(&scramble);
     let solution = solve(state, 23, None).unwrap();
 
     println!("{}", solution);
 
     let faces = "DRBLUURLDRBLRRBFLFFUBFFDRUDURRBDFBBULDUDLUDLBUFFDBFLRL";
-    let face_cube = FaceCube::try_from(faces).unwrap();
-    let state = State::try_from(&face_cube).unwrap();
+    let face_cube = FaceCube::try_from(faces)?;
+    let state = State::try_from(&face_cube)?;
     let (move_table, pruning_table) = read_table()?;
     let mut solver = Solver::new(&move_table, &pruning_table, 23, None);
     let solution = solver.solve(state).unwrap();
