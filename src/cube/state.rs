@@ -1,3 +1,5 @@
+use crate::error::Error;
+
 use self::{Corner::*, Edge::*, Move::*};
 use super::{facelet::*, moves::*};
 use std::ops::Mul;
@@ -13,7 +15,7 @@ pub enum Corner {
 }
 
 impl TryFrom<u8> for Corner {
-    type Error = String;
+    type Error = Error;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
@@ -25,7 +27,7 @@ impl TryFrom<u8> for Corner {
             5 => Ok(DFR),
             6 => Ok(DBR),
             7 => Ok(DBL),
-            _ => Err("Invalid corner value".to_owned()),
+            _ => Err(Error::InvalidCorner),
         }
     }
 }
@@ -42,7 +44,7 @@ pub enum Edge {
 }
 
 impl TryFrom<u8> for Edge {
-    type Error = String;
+    type Error = Error;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
@@ -58,7 +60,7 @@ impl TryFrom<u8> for Edge {
             9 => Ok(DR),
             10 => Ok(DB),
             11 => Ok(DL),
-            _ => Err("Invalid edge value".to_owned()),
+            _ => Err(Error::InvalidEdge),
         }
     }
 }
@@ -183,7 +185,7 @@ impl From<&Vec<Move>> for State {
 
 /// Gives State (cubie) representation of a face cube (facelet).
 impl TryFrom<&FaceCube> for State {
-    type Error = String;
+    type Error = Error;
     fn try_from(face_cube: &FaceCube) -> Result<Self, Self::Error> {
         let mut ori: usize = 0;
         let mut state = SOLVED_STATE;
@@ -243,7 +245,7 @@ impl TryFrom<&FaceCube> for State {
         let e_perm = state.count_edge_perm();
 
         if c_perm % 2 != e_perm % 2 {
-            Err("Invalid facelet representation".to_owned())
+            Err(Error::InvalidFaceletValue)
         } else {
             Ok(state)
         }

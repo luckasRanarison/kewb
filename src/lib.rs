@@ -30,3 +30,5 @@ pub mod index {
 pub mod utils {
     pub use crate::cube::{moves::scramble_from_string, utils::generate_random_state};
 }
+
+pub mod error;

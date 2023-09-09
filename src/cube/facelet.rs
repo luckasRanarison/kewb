@@ -1,3 +1,5 @@
+use crate::error::Error;
+
 /// Names the colors of the cube facelets: up, right, face, down, left, back.
 #[rustfmt::skip]
 #[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
@@ -6,7 +8,7 @@ pub enum Color {
 }
 
 impl TryFrom<char> for Color {
-    type Error = String;
+    type Error = Error;
     fn try_from(value: char) -> Result<Self, Self::Error> {
         match value {
             'U' => Ok(Color::U),
@@ -15,7 +17,7 @@ impl TryFrom<char> for Color {
             'D' => Ok(Color::D),
             'L' => Ok(Color::L),
             'B' => Ok(Color::B),
-            _ => Err("Invalid color value".to_owned()),
+            _ => Err(Error::InvalidColor),
         }
     }
 }
@@ -40,7 +42,7 @@ const SOLVED_FACE_CUBE: FaceCube = FaceCube {
 };
 
 impl TryFrom<&str> for FaceCube {
-    type Error = String;
+    type Error = Error;
     fn try_from(cube_string: &str) -> Result<Self, Self::Error> {
         let mut f: [Color; 54] = SOLVED_FACE_CUBE.f;
 

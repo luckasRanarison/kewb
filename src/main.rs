@@ -1,12 +1,12 @@
-use std::{fmt, io, time::Instant};
-
 use clap::{arg, command, Parser, Subcommand};
 use kewb::{
+    error::Error,
     fs::read_table,
     utils::{generate_random_state, scramble_from_string},
 };
-use kewb::{solve, FaceCube, Move, Solver, State};
+use kewb::{FaceCube, Move, Solver, State};
 use spinners::Spinner;
+use std::time::Instant;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -48,40 +48,13 @@ enum Commands {
     },
 }
 
-enum SolverError {
-    InvalidScramble,
-    InvalidFaceletString,
-    InvalidFaceletValue,
-    IOError(io::Error),
-}
-
-impl From<io::Error> for SolverError {
-    fn from(value: io::Error) -> Self {
-        Self::IOError(value)
-    }
-}
-
-impl fmt::Display for SolverError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::InvalidScramble => write!(f, "Invalid scramble"),
-            Self::InvalidFaceletString => write!(f, "Invalid facelet string"),
-            Self::InvalidFaceletValue => write!(f, "Invalid facelet reperesentation"),
-            Self::IOError(value) => value.fmt(f),
-        }
-    }
-}
-
-fn solve_state(
-    state: State,
-    max: u8,
-    timeout: Option<f32>,
-    details: bool,
-) -> Result<(), io::Error> {
+fn solve_state(state: State, max: u8, timeout: Option<f32>, details: bool) -> Result<(), Error> {
+    let (move_table, pruning_table) = read_table()?;
+    let mut solver = Solver::new(&move_table, &pruning_table, max, timeout);
     let mut spinner = Spinner::new(spinners::Spinners::Dots, "Solving".to_owned());
 
     let start = Instant::now();
-    let solution = solve(state, max, timeout);
+    let solution = solver.solve(state);
     let end = Instant::now();
 
     spinner.stop_with_newline();
@@ -112,32 +85,27 @@ fn solve_scramble(
     max: u8,
     timeout: Option<f32>,
     details: bool,
-) -> Result<(), SolverError> {
+) -> Result<(), Error> {
     if let Some(scramble) = scramble_from_string(scramble) {
         let state = State::from(&scramble);
         Ok(solve_state(state, max, timeout, details)?)
     } else {
-        Err(SolverError::InvalidScramble)
+        Err(Error::InvalidScramble)
     }
 }
 
-fn solve_facelet(
-    facelet: &str,
-    max: u8,
-    timeout: Option<f32>,
-    details: bool,
-) -> Result<(), SolverError> {
+fn solve_facelet(facelet: &str, max: u8, timeout: Option<f32>, details: bool) -> Result<(), Error> {
     if let Ok(face_cube) = FaceCube::try_from(facelet) {
         match State::try_from(&face_cube) {
             Ok(state) => Ok(solve_state(state, max, timeout, details)?),
-            Err(_) => Err(SolverError::InvalidFaceletValue),
+            Err(_) => Err(Error::InvalidFaceletValue),
         }
     } else {
-        Err(SolverError::InvalidFaceletString)
+        Err(Error::InvalidFaceletString)
     }
 }
 
-fn scramble(number: usize) -> Result<(), io::Error> {
+fn scramble(number: usize) -> Result<(), Error> {
     let mut spinner = Spinner::new(spinners::Spinners::Dots, "Generating scramble".to_owned());
     let mut scrambles = Vec::new();
     let (move_table, pruning_table) = read_table()?;
@@ -175,7 +143,7 @@ fn scramble(number: usize) -> Result<(), io::Error> {
     Ok(())
 }
 
-fn main() -> Result<(), io::Error> {
+fn main() -> Result<(), Error> {
     let program = Cli::parse();
 
     match &program.command {
@@ -195,7 +163,7 @@ fn main() -> Result<(), io::Error> {
             }
 
             if let Some(error) = error {
-                println!("error: {}", error);
+                println!("Error: {}", error);
             }
 
             Ok(())

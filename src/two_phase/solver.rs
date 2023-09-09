@@ -9,6 +9,7 @@ use crate::{
         moves::{is_move_available, Move},
         state::{State, SOLVED_STATE},
     },
+    error::Error,
     fs::read_table,
 };
 
@@ -341,10 +342,15 @@ impl<'a> Solver<'a> {
 }
 
 /// Solves a state state using the two phase algorithm, shorthand for `solver_instance.solve()`.
-pub fn solve(state: State, max_length: u8, timeout: Option<f32>) -> Option<Solution> {
-    let (move_table, pruning_table) = read_table().unwrap();
+pub fn solve(
+    state: State,
+    max_length: u8,
+    timeout: Option<f32>,
+) -> Result<Option<Solution>, Error> {
+    let (move_table, pruning_table) = read_table()?;
     let mut solver = Solver::new(&move_table, &pruning_table, max_length, timeout);
-    solver.solve(state)
+
+    Ok(solver.solve(state))
 }
 
 #[cfg(test)]
@@ -364,7 +370,7 @@ mod test {
         ];
         let state = State::from(&scramble);
         let solution = solve(state, 23, None).unwrap();
-        let solved_state = state.apply_moves(&solution.get_all_moves());
+        let solved_state = state.apply_moves(&solution.unwrap().get_all_moves());
 
         assert_eq!(solved_state, SOLVED_STATE);
     }
