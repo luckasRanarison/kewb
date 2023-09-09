@@ -13,8 +13,8 @@ pub struct MoveTable {
     pub e_ep: Table<u16>,
 }
 
-impl MoveTable {
-    pub fn new() -> Self {
+impl Default for MoveTable {
+    fn default() -> Self {
         Self {
             co: get_co_table(),
             eo: get_eo_table(),
@@ -34,9 +34,9 @@ pub fn get_co_table() -> Table<u16> {
         let mut state = SOLVED_STATE;
         state.co = co;
 
-        for (i_m, m) in ALL_MOVES.iter().enumerate() {
+        for (j, m) in ALL_MOVES.iter().enumerate() {
             let new_state = state.apply_move(*m);
-            co_table[i as usize][i_m] = co_to_index(&new_state.co);
+            co_table[i as usize][j] = co_to_index(&new_state.co);
         }
     }
 
@@ -51,9 +51,9 @@ pub fn get_eo_table() -> Table<u16> {
         let mut state = SOLVED_STATE;
         state.eo = eo;
 
-        for (i_m, m) in ALL_MOVES.iter().enumerate() {
+        for (j, m) in ALL_MOVES.iter().enumerate() {
             let new_state = state.apply_move(*m);
-            eo_table[i as usize][i_m] = eo_to_index(&new_state.eo);
+            eo_table[i as usize][j] = eo_to_index(&new_state.eo);
         }
     }
 
@@ -67,9 +67,9 @@ pub fn get_e_combo_table() -> Table<u16> {
         let mut state = SOLVED_STATE;
         state.ep = ep;
 
-        for (i_m, m) in ALL_MOVES.iter().enumerate() {
+        for (j, m) in ALL_MOVES.iter().enumerate() {
             let new_state = state.apply_move(*m);
-            e_combo_table[i as usize][i_m] = e_combo_to_index(&new_state.ep);
+            e_combo_table[i as usize][j] = e_combo_to_index(&new_state.ep);
         }
     }
 
@@ -84,9 +84,9 @@ pub fn get_cp_table() -> Table<u16> {
         let mut state = SOLVED_STATE;
         state.cp = cp;
 
-        for (i_m, m) in PHASE2_MOVES.iter().enumerate() {
+        for (j, m) in PHASE2_MOVES.iter().enumerate() {
             let new_state = state.apply_move(*m);
-            cp_table[i as usize][i_m] = cp_to_index(&new_state.cp);
+            cp_table[i as usize][j] = cp_to_index(&new_state.cp);
         }
     }
 
@@ -101,9 +101,9 @@ pub fn get_ud_ep_table() -> Table<u16> {
         let mut state = SOLVED_STATE;
         state.ep = ep;
 
-        for (i_m, m) in PHASE2_MOVES.iter().enumerate() {
+        for (j, m) in PHASE2_MOVES.iter().enumerate() {
             let new_state = state.apply_move(*m);
-            ep_table[i as usize][i_m] = ud_ep_to_index(&new_state.ep);
+            ep_table[i as usize][j] = ud_ep_to_index(&new_state.ep);
         }
     }
 
@@ -118,9 +118,9 @@ pub fn get_e_ep_table() -> Table<u16> {
         let mut state = SOLVED_STATE;
         state.ep = ep;
 
-        for (i_m, m) in PHASE2_MOVES.iter().enumerate() {
+        for (j, m) in PHASE2_MOVES.iter().enumerate() {
             let new_state = state.apply_move(*m);
-            e_ep_table[i as usize][i_m] = e_ep_to_index(&new_state.ep);
+            e_ep_table[i as usize][j] = e_ep_to_index(&new_state.ep);
         }
     }
 

@@ -6,6 +6,7 @@ use super::state::{Corner::*, Edge::*, State};
 /// Layer moves, Up, Down, Right, Left, Face, Back.
 /// $ clockwise, $2 double, $3 counter-clockwise.
 #[rustfmt::skip]
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Move {
     U, U2, U3,
@@ -30,26 +31,27 @@ impl fmt::Display for Move {
     }
 }
 
+#[rustfmt::skip]
 impl Move {
     pub fn is_inverse(&self, other: Move) -> bool {
-        match (&self, other) {
-            (U | U2 | U3, D | D2 | D3) => true,
-            (R | R2 | R3, L | L2 | L3) => true,
-            (F | F2 | F3, B | B2 | B3) => true,
-            _ => false,
-        }
+        matches!(
+            (&self, other),
+            (U | U2 | U3, D | D2 | D3) 
+            | (R | R2 | R3, L | L2 | L3) 
+            | (F | F2 | F3, B | B2 | B3),
+        )
     }
 
     pub fn is_same_layer(&self, other: Move) -> bool {
-        match (&self, other) {
-            (U | U2 | U3, U | U2 | U3) => true,
-            (D | D2 | D3, D | D2 | D3) => true,
-            (R | R2 | R3, R | R2 | R3) => true,
-            (L | L2 | L3, L | L2 | L3) => true,
-            (F | F2 | F3, F | F2 | F3) => true,
-            (B | B2 | B3, B | B2 | B3) => true,
-            _ => false,
-        }
+        matches!(
+            (&self, other),
+            (U | U2 | U3, U | U2 | U3)
+            | (D | D2 | D3, D | D2 | D3)
+            | (R | R2 | R3, R | R2 | R3)
+            | (L | L2 | L3, L | L2 | L3)
+            | (F | F2 | F3, F | F2 | F3)
+            | (B | B2 | B3, B | B2 | B3)
+        )
     }
 
     pub fn get_inverse(self) -> Self {
@@ -78,7 +80,7 @@ pub fn is_move_available(prev: Move, current: Move) -> bool {
 pub fn scramble_from_string(string: &str) -> Option<Vec<Move>> {
     let mut scramble = vec![];
 
-    for word in string.split(" ") {
+    for word in string.split_whitespace() {
         let m = match word.trim() {
             "R" => R,
             "R'" => R3,

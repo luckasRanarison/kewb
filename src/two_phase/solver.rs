@@ -118,24 +118,28 @@ impl Phase for Phase2State {
 /// Two phase solution.
 #[derive(Debug, Clone)]
 pub struct Solution {
-    pub phase_1: Vec<Move>,
-    pub phase_2: Vec<Move>,
+    pub phase1: Vec<Move>,
+    pub phase2: Vec<Move>,
 }
 
 impl Solution {
     pub fn len(&self) -> usize {
-        self.phase_1.len() + self.phase_2.len()
+        self.phase1.len() + self.phase2.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.phase1.is_empty() && self.phase2.is_empty()
     }
 }
 
 impl fmt::Display for Solution {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut clone = self.phase_1.clone();
-        clone.extend(&self.phase_2);
+        let mut clone = self.phase1.clone();
+        clone.extend(&self.phase2);
         let stringified = clone
             .iter()
             .map(|m| m.to_string())
-            .collect::<Vec<String>>()
+            .collect::<Vec<_>>()
             .join(" ");
 
         write!(f, "{stringified}")
@@ -144,24 +148,24 @@ impl fmt::Display for Solution {
 
 impl Solution {
     pub fn phase1_to_string(&self) -> String {
-        self.phase_1
+        self.phase1
             .iter()
             .map(|m| m.to_string())
-            .collect::<Vec<String>>()
+            .collect::<Vec<_>>()
             .join(" ")
     }
 
     pub fn phase2_to_string(&self) -> String {
-        self.phase_2
+        self.phase2
             .iter()
             .map(|m| m.to_string())
-            .collect::<Vec<String>>()
+            .collect::<Vec<_>>()
             .join(" ")
     }
 
     pub fn get_all_moves(&self) -> Vec<Move> {
-        let mut solution = self.phase_1.clone();
-        solution.extend(&self.phase_2);
+        let mut solution = self.phase1.clone();
+        solution.extend(&self.phase2);
         solution
     }
 }
@@ -173,8 +177,8 @@ pub struct Solver<'a> {
     max_length: u8,
     timeout: Option<Duration>,
     initial_state: State,
-    solution_phase_1: Vec<Move>,
-    solution_phase_2: Vec<Move>,
+    solution_phase1: Vec<Move>,
+    solution_phase2: Vec<Move>,
     best_solution: Option<Solution>,
 }
 
@@ -185,10 +189,7 @@ impl<'a> Solver<'a> {
         max_length: u8,
         timeout: Option<f32>,
     ) -> Self {
-        let timeout = match timeout {
-            Some(value) => Some(Duration::from_secs_f32(value)),
-            None => None,
-        };
+        let timeout = timeout.map(Duration::from_secs_f32);
 
         Self {
             move_table,
@@ -196,8 +197,8 @@ impl<'a> Solver<'a> {
             initial_state: SOLVED_STATE,
             max_length,
             timeout,
-            solution_phase_1: vec![],
-            solution_phase_2: vec![],
+            solution_phase1: vec![],
+            solution_phase2: vec![],
             best_solution: None,
         }
     }
@@ -210,7 +211,7 @@ impl<'a> Solver<'a> {
 
         for depth in 0..=self.max_length {
             let state = Phase1State::from(state);
-            let found = self.solve_phase_1(state, depth, start);
+            let found = self.solve_phase1(state, depth, start);
 
             if let Some(timeout) = self.timeout {
                 if start.elapsed() > timeout {
@@ -224,7 +225,7 @@ impl<'a> Solver<'a> {
         None
     }
 
-    fn solve_phase_1(&mut self, state: Phase1State, depth: u8, time: Instant) -> bool {
+    fn solve_phase1(&mut self, state: Phase1State, depth: u8, time: Instant) -> bool {
         if let Some(timeout) = self.timeout {
             if time.elapsed() > timeout {
                 return true;
@@ -234,15 +235,15 @@ impl<'a> Solver<'a> {
         if depth == 0 && state.is_solved() {
             let mut cube_state = self.initial_state;
 
-            for m in &self.solution_phase_1 {
+            for m in &self.solution_phase1 {
                 cube_state = cube_state.apply_move(*m);
             }
 
-            let max_depth = match self.solution_phase_1.len() {
+            let max_depth = match self.solution_phase1.len() {
                 0 => self.max_length,
                 _ => {
-                    if self.max_length > self.solution_phase_1.len() as u8 {
-                        self.max_length - self.solution_phase_1.len() as u8
+                    if self.max_length > self.solution_phase1.len() as u8 {
+                        self.max_length - self.solution_phase1.len() as u8
                     } else {
                         return true;
                     }
@@ -251,7 +252,7 @@ impl<'a> Solver<'a> {
 
             for phase2_depth in 0..max_depth {
                 let state = Phase2State::from(cube_state);
-                if self.solve_phase_2(state, phase2_depth, time) {
+                if self.solve_phase2(state, phase2_depth, time) {
                     return true;
                 }
             }
@@ -259,32 +260,32 @@ impl<'a> Solver<'a> {
             return false;
         }
 
-        if state.prune(&self.pruning_table, depth) || depth == 0 {
+        if state.prune(self.pruning_table, depth) || depth == 0 {
             return false;
         }
 
-        for (i_m, m) in ALL_MOVES.iter().enumerate() {
-            if let Some(prev) = self.solution_phase_1.last() {
+        for (i, m) in ALL_MOVES.iter().enumerate() {
+            if let Some(prev) = self.solution_phase1.last() {
                 if !is_move_available(*prev, *m) {
                     continue;
                 }
             }
 
-            self.solution_phase_1.push(*m);
-            let new_state = state.next(&self.move_table, i_m);
-            let found = self.solve_phase_1(new_state, depth - 1, time);
+            self.solution_phase1.push(*m);
+            let new_state = state.next(self.move_table, i);
+            let found = self.solve_phase1(new_state, depth - 1, time);
 
             if found {
                 return true;
             }
 
-            self.solution_phase_1.pop();
+            self.solution_phase1.pop();
         }
 
         false
     }
 
-    fn solve_phase_2(&mut self, state: Phase2State, depth: u8, time: Instant) -> bool {
+    fn solve_phase2(&mut self, state: Phase2State, depth: u8, time: Instant) -> bool {
         if let Some(timeout) = self.timeout {
             if time.elapsed() > timeout {
                 return true;
@@ -293,12 +294,12 @@ impl<'a> Solver<'a> {
 
         if depth == 0 && state.is_solved() {
             let solution = Solution {
-                phase_1: self.solution_phase_1.clone(),
-                phase_2: self.solution_phase_2.clone(),
+                phase1: self.solution_phase1.clone(),
+                phase2: self.solution_phase2.clone(),
             };
 
             if let Some(best_solution) = &mut self.best_solution {
-                let current_length = self.solution_phase_1.len() + self.solution_phase_2.len();
+                let current_length = self.solution_phase1.len() + self.solution_phase2.len();
                 if best_solution.len() > current_length {
                     *best_solution = solution
                 }
@@ -309,32 +310,30 @@ impl<'a> Solver<'a> {
             return true;
         }
 
-        if state.prune(&self.pruning_table, depth) || depth == 0 {
+        if state.prune(self.pruning_table, depth) || depth == 0 {
             return false;
         }
 
-        for (i_m, m) in PHASE2_MOVES.iter().enumerate() {
-            if let Some(prev) = self.solution_phase_2.last() {
+        for (i, m) in PHASE2_MOVES.iter().enumerate() {
+            if let Some(prev) = self.solution_phase2.last() {
                 if !is_move_available(*prev, *m) {
                     continue;
                 }
-            } else {
-                if let Some(prev) = self.solution_phase_1.last() {
-                    if !is_move_available(*prev, *m) {
-                        continue;
-                    }
+            } else if let Some(prev) = self.solution_phase1.last() {
+                if !is_move_available(*prev, *m) {
+                    continue;
                 }
             }
 
-            self.solution_phase_2.push(*m);
-            let new_state = state.next(&self.move_table, i_m);
-            let found = self.solve_phase_2(new_state, depth - 1, time);
+            self.solution_phase2.push(*m);
+            let new_state = state.next(self.move_table, i);
+            let found = self.solve_phase2(new_state, depth - 1, time);
 
             if found {
                 return true;
             }
 
-            self.solution_phase_2.pop();
+            self.solution_phase2.pop();
         }
 
         false

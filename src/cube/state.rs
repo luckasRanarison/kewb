@@ -5,6 +5,7 @@ use std::ops::Mul;
 /// Represents the 8 corners on the cube, described by the layer they are on.
 /// Example: UBL (Up, Bottom, Left).
 #[rustfmt::skip]
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 pub enum Corner {
     UBL, UBR, UFR, UFL,
@@ -32,6 +33,7 @@ impl TryFrom<u8> for Corner {
 /// Represents the 12 edges on the cube, described by the layer they are on.
 /// Example: BL (Bottom, Left).
 #[rustfmt::skip]
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 pub enum Edge {
     BL, BR, FR, FL,
@@ -123,7 +125,7 @@ impl State {
     }
 
     pub fn apply_moves(&self, moves: &Vec<Move>) -> Self {
-        let mut state = self.clone();
+        let mut state = *self;
 
         for m in moves {
             state = state.apply_move(*m);

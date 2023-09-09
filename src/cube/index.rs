@@ -1,7 +1,7 @@
 use super::state::{Corner, Edge};
 
 pub fn co_to_index(corner: &[u8; 8]) -> u16 {
-    let mut index: u16 = 0;
+    let mut index = 0;
 
     for co in &corner[0..7] {
         index = index * 3 + *co as u16;
@@ -25,13 +25,13 @@ pub fn index_to_co(mut index: u16) -> [u8; 8] {
 }
 
 pub fn eo_to_index(edge: &[u8; 12]) -> u16 {
-    let mut index: u16 = 0;
+    let mut index = 0;
 
     for eo in &edge[0..11] {
         index = index * 2 + *eo as u16;
     }
 
-    index.into()
+    index
 }
 
 pub fn index_to_eo(mut index: u16) -> [u8; 12] {
@@ -63,7 +63,7 @@ fn calculate_combo(n: u8, k: u8) -> u16 {
 }
 
 pub fn e_combo_to_index(edge: &[Edge; 12]) -> u16 {
-    let mut index: u16 = 0;
+    let mut index = 0;
     let mut k = 4;
 
     for i in (0..12).rev() {
@@ -92,7 +92,7 @@ pub fn index_to_e_combo(mut index: u16) -> [Edge; 12] {
 }
 
 pub fn cp_to_index(cp: &[Corner; 8]) -> u16 {
-    let mut index: u16 = 0;
+    let mut index = 0;
 
     for i in 0..8 {
         index *= 8 - i as u16;
@@ -123,7 +123,7 @@ pub fn index_to_cp(mut index: u16) -> [Corner; 8] {
 }
 
 pub fn ep_to_index(ep: &[Edge; 12]) -> u32 {
-    let mut index: u32 = 0;
+    let mut index = 0;
 
     for i in 0..12 {
         index *= 12 - i as u32;
@@ -154,7 +154,7 @@ pub fn index_to_ep(mut index: u32) -> [Edge; 12] {
 }
 
 pub fn ud_ep_to_index(ep: &[Edge; 12]) -> u16 {
-    let mut index: u16 = 0;
+    let mut index = 0;
     let slice = &ep[4..12];
 
     for i in 0..8 {
@@ -187,7 +187,7 @@ pub fn index_to_ud_ep(mut index: u16) -> [Edge; 12] {
 }
 
 pub fn e_ep_to_index(ep: &[Edge; 12]) -> u16 {
-    let mut index: u16 = 0;
+    let mut index = 0;
     let slice = &ep[0..4];
 
     for i in 0..4 {
