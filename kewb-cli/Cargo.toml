@@ -1,0 +1,23 @@
+[package]
+name = "kewb-cli"
+version = "0.1.0"
+edition = "2021"
+description = "CLI application for solving and scrambling the 3x3 Rubik's cube"
+authors = [
+  "LIOKA Ranraison Fiderana <luckasranarison@gmail.com>",
+  "Miklos Vajna <vmiklos@vmiklos.hu>",
+]
+repository = "https://github.com/luckasRanarison/kewb"
+keywords = ["rubiks-cube", "cube-solver", "kociemba", "two-phase"]
+categories = ["command-line-utilities"]
+license = "MIT"
+readme = "../README.md"
+
+[dependencies]
+kewb = { path = "../kewb" }
+clap = { version = "4.2.5", features = ["derive"] }
+spinners = { version = "4.1.0" }
+bincode = { version = "2.0.0-rc", features = ["serde"] }
+
+[build-dependencies]
+kewb = { path = "../kewb" }

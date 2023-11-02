@@ -1,12 +1,14 @@
 use clap::{arg, command, Parser, Subcommand};
 use kewb::{
     error::Error,
-    fs::read_table,
+    fs::decode_table,
     utils::{generate_random_state, scramble_from_string},
 };
 use kewb::{FaceCube, Move, Solver, State};
 use spinners::Spinner;
 use std::time::Instant;
+
+const TABLE: &[u8] = include_bytes!("../bin/table.bin");
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -49,8 +51,8 @@ enum Commands {
 }
 
 fn solve_state(state: State, max: u8, timeout: Option<f32>, details: bool) -> Result<(), Error> {
-    let (move_table, pruning_table) = read_table()?;
-    let mut solver = Solver::new(&move_table, &pruning_table, max, timeout);
+    let table = decode_table(TABLE)?;
+    let mut solver = Solver::new(&table, max, timeout);
     let mut spinner = Spinner::new(spinners::Spinners::Dots, "Solving".to_owned());
 
     let start = Instant::now();
@@ -108,11 +110,11 @@ fn solve_facelet(facelet: &str, max: u8, timeout: Option<f32>, details: bool) ->
 fn scramble(number: usize) -> Result<(), Error> {
     let mut spinner = Spinner::new(spinners::Spinners::Dots, "Generating scramble".to_owned());
     let mut scrambles = Vec::new();
-    let (move_table, pruning_table) = read_table()?;
+    let table = decode_table(TABLE)?;
     let start = Instant::now();
 
     for _ in 0..number {
-        let mut solver = Solver::new(&move_table, &pruning_table, 25, None);
+        let mut solver = Solver::new(&table, 25, None);
         let state = generate_random_state();
         let scramble = solver.solve(state).unwrap().get_all_moves();
         let scramble: Vec<Move> = scramble.iter().rev().map(|m| m.get_inverse()).collect();

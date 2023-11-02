@@ -3,19 +3,15 @@ use std::{
     time::{Duration, Instant},
 };
 
-use crate::{
-    cube::{
-        index::*,
-        moves::{is_move_available, Move},
-        state::{State, SOLVED_STATE},
-    },
-    error::Error,
-    fs::read_table,
+use crate::cube::{
+    index::*,
+    moves::{is_move_available, Move},
+    state::{State, SOLVED_STATE},
 };
 
-use super::moves::MoveTable;
 use super::pruning::PruningTable;
 use super::utils::{ALL_MOVES, PHASE2_MOVES};
+use super::{moves::MoveTable, utils::DataTable};
 
 trait Phase {
     fn is_solved(&self) -> bool;
@@ -173,8 +169,7 @@ impl Solution {
 
 /// Two phase solver struct for more control.
 pub struct Solver<'a> {
-    move_table: &'a MoveTable,
-    pruning_table: &'a PruningTable,
+    data_table: &'a DataTable,
     max_length: u8,
     timeout: Option<Duration>,
     initial_state: State,
@@ -184,17 +179,11 @@ pub struct Solver<'a> {
 }
 
 impl<'a> Solver<'a> {
-    pub fn new(
-        move_table: &'a MoveTable,
-        pruning_table: &'a PruningTable,
-        max_length: u8,
-        timeout: Option<f32>,
-    ) -> Self {
+    pub fn new(data_table: &'a DataTable, max_length: u8, timeout: Option<f32>) -> Self {
         let timeout = timeout.map(Duration::from_secs_f32);
 
         Self {
-            move_table,
-            pruning_table,
+            data_table,
             initial_state: SOLVED_STATE,
             max_length,
             timeout,
@@ -261,7 +250,7 @@ impl<'a> Solver<'a> {
             return false;
         }
 
-        if state.prune(self.pruning_table, depth) || depth == 0 {
+        if state.prune(&self.data_table.pruning_table, depth) || depth == 0 {
             return false;
         }
 
@@ -273,7 +262,7 @@ impl<'a> Solver<'a> {
             }
 
             self.solution_phase1.push(*m);
-            let new_state = state.next(self.move_table, i);
+            let new_state = state.next(&self.data_table.move_table, i);
             let found = self.solve_phase1(new_state, depth - 1, time);
 
             if found {
@@ -311,7 +300,7 @@ impl<'a> Solver<'a> {
             return true;
         }
 
-        if state.prune(self.pruning_table, depth) || depth == 0 {
+        if state.prune(&self.data_table.pruning_table, depth) || depth == 0 {
             return false;
         }
 
@@ -327,7 +316,7 @@ impl<'a> Solver<'a> {
             }
 
             self.solution_phase2.push(*m);
-            let new_state = state.next(self.move_table, i);
+            let new_state = state.next(&self.data_table.move_table, i);
             let found = self.solve_phase2(new_state, depth - 1, time);
 
             if found {
@@ -341,18 +330,6 @@ impl<'a> Solver<'a> {
     }
 }
 
-/// Solves a state state using the two phase algorithm, shorthand for `solver_instance.solve()`.
-pub fn solve(
-    state: State,
-    max_length: u8,
-    timeout: Option<f32>,
-) -> Result<Option<Solution>, Error> {
-    let (move_table, pruning_table) = read_table()?;
-    let mut solver = Solver::new(&move_table, &pruning_table, max_length, timeout);
-
-    Ok(solver.solve(state))
-}
-
 #[cfg(test)]
 mod test {
     use crate::{
@@ -360,7 +337,7 @@ mod test {
             moves::Move::*,
             state::{State, SOLVED_STATE},
         },
-        two_phase::solver::solve,
+        DataTable, Solver,
     };
 
     #[test]
@@ -369,7 +346,9 @@ mod test {
             D3, R2, L3, U2, F, R, F3, D2, R2, F2, B2, U2, R2, F2, U, R2, U3, R2, D2,
         ];
         let state = State::from(&scramble);
-        let solution = solve(state, 23, None).unwrap();
+        let table = DataTable::default();
+        let mut solver = Solver::new(&table, 23, None);
+        let solution = solver.solve(state);
         let solved_state = state.apply_moves(&solution.unwrap().get_all_moves());
 
         assert_eq!(solved_state, SOLVED_STATE);

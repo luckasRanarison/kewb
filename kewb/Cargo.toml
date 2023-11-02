@@ -1,0 +1,18 @@
+[package]
+name = "kewb"
+version = "0.2.1"
+edition = "2021"
+description = "A crate for manipulating and solving a 3x3 Rubik's cube with Kociemba's two phase algorithm"
+authors = [
+  "LIOKA Ranraison Fiderana <luckasranarison@gmail.com>",
+  "Miklos Vajna <vmiklos@vmiklos.hu>",
+]
+repository = "https://github.com/luckasRanarison/kewb"
+keywords = ["rubiks-cube", "cube-solver", "kociemba", "two-phase"]
+categories = ["algorithms"]
+license = "MIT"
+readme = "../README.md"
+
+[dependencies]
+rand = "0.8.3"
+bincode = { version = "2.0.0-rc", features = ["serde"] }
