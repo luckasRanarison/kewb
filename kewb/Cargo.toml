@@ -1,6 +1,6 @@
 [package]
 name = "kewb"
-version = "0.2.1"
+version = "0.3.0"
 edition = "2021"
 description = "A crate for manipulating and solving a 3x3 Rubik's cube with Kociemba's two phase algorithm"
 authors = [
