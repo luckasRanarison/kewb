@@ -1,12 +1,21 @@
 use clap::{arg, command, Parser, Subcommand};
+use crossterm::{
+    cursor::{MoveLeft, MoveRight, MoveUp},
+    execute,
+    style::{Color as TermColor, SetBackgroundColor},
+};
 use kewb::{
     error::Error,
     fs::decode_table,
     utils::{generate_random_state, scramble_from_string},
+    Color,
 };
 use kewb::{FaceCube, Move, Solver, State};
 use spinners::Spinner;
-use std::time::Instant;
+use std::{
+    io::{self, stdout},
+    time::Instant,
+};
 
 const TABLE: &[u8] = include_bytes!("../bin/table.bin");
 
@@ -47,6 +56,9 @@ enum Commands {
     Scramble {
         #[arg(short, long, default_value_t = 1)]
         number: usize,
+
+        #[arg(short, long)]
+        preview: bool,
     },
 }
 
@@ -107,9 +119,63 @@ fn solve_facelet(facelet: &str, max: u8, timeout: Option<f32>, details: bool) ->
     }
 }
 
-fn scramble(number: usize) -> Result<(), Error> {
+fn color_to_termcolor(color: Color) -> TermColor {
+    match color {
+        Color::U => TermColor::White,
+        Color::R => TermColor::Red,
+        Color::F => TermColor::Green,
+        Color::D => TermColor::Yellow,
+        Color::L => TermColor::Magenta,
+        Color::B => TermColor::Blue,
+    }
+}
+
+fn print_face(face: &[Color], offset: u16) -> Result<(), io::Error> {
+    for i in 0..3 {
+        let layer = format!(
+            "{}  {}  {}  {}",
+            SetBackgroundColor(color_to_termcolor(face[3 * i])),
+            SetBackgroundColor(color_to_termcolor(face[(3 * i) + 1])),
+            SetBackgroundColor(color_to_termcolor(face[(3 * i) + 2])),
+            SetBackgroundColor(TermColor::Reset)
+        );
+
+        println!("{layer}");
+
+        if offset != 0 {
+            execute!(stdout(), MoveRight(offset))?;
+        }
+    }
+
+    Ok(())
+}
+
+fn print_facelet(facelet: &FaceCube) -> Result<(), io::Error> {
+    let stdout = stdout();
+
+    println!();
+    execute!(&stdout, MoveRight(6))?;
+    print_face(&facelet.f[0..9], 6)?; // U
+    execute!(&stdout, MoveLeft(6))?;
+    print_face(&facelet.f[36..45], 0)?; // L
+    execute!(&stdout, MoveRight(6), MoveUp(3))?;
+    print_face(&facelet.f[18..27], 6)?; // F
+    execute!(&stdout, MoveLeft(12), MoveUp(3), MoveRight(12))?;
+    print_face(&facelet.f[9..18], 12)?; // R
+    execute!(&stdout, MoveLeft(12), MoveUp(3), MoveRight(18))?;
+    print_face(&facelet.f[45..54], 18)?; // B
+    execute!(&stdout, MoveLeft(12))?;
+    print_face(&facelet.f[27..36], 6)?; // D
+    execute!(&stdout, MoveLeft(12))?;
+    println!();
+
+    Ok(())
+}
+
+fn scramble(number: usize, preview: bool) -> Result<(), Error> {
     let mut spinner = Spinner::new(spinners::Spinners::Dots, "Generating scramble".to_owned());
     let mut scrambles = Vec::new();
+    let mut states = Vec::new();
     let table = decode_table(TABLE)?;
     let start = Instant::now();
 
@@ -118,6 +184,8 @@ fn scramble(number: usize) -> Result<(), Error> {
         let state = generate_random_state();
         let scramble = solver.solve(state).unwrap().get_all_moves();
         let scramble: Vec<Move> = scramble.iter().rev().map(|m| m.get_inverse()).collect();
+
+        states.push(state);
         scrambles.push(scramble);
     }
 
@@ -138,6 +206,11 @@ fn scramble(number: usize) -> Result<(), Error> {
                 _ => format!("{} - ", i + 1),
             }
         );
+
+        if preview {
+            let facelet = FaceCube::try_from(&states[i])?;
+            print_facelet(&facelet)?;
+        }
     }
 
     println!("Done in {}s", (end - start).as_secs_f32());
@@ -170,7 +243,7 @@ fn main() -> Result<(), Error> {
 
             Ok(())
         }
-        Some(Commands::Scramble { number }) => scramble(*number),
+        Some(Commands::Scramble { number, preview }) => scramble(*number, *preview),
         _ => Ok(()),
     }
 }
