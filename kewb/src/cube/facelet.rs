@@ -1,4 +1,4 @@
-use crate::error::Error;
+use crate::{error::Error, State};
 
 /// Names the colors of the cube facelets: up, right, face, down, left, back.
 #[rustfmt::skip]
@@ -25,6 +25,7 @@ impl TryFrom<char> for Color {
 /// Cube on the facelet level.
 /// The facelet representation follows the ordering: U-R-F-D-L-B.
 /// A solved facelet is UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB.
+#[derive(Debug, PartialEq)]
 pub struct FaceCube {
     pub f: [Color; 54],
 }
@@ -40,6 +41,33 @@ const SOLVED_FACE_CUBE: FaceCube = FaceCube {
         Color::B, Color::B, Color::B, Color::B, Color::B, Color::B, Color::B, Color::B, Color::B,
     ],
 };
+
+impl TryFrom<&State> for FaceCube {
+    type Error = Error;
+    fn try_from(value: &State) -> Result<Self, Self::Error> {
+        let mut face = SOLVED_FACE_CUBE;
+
+        for (i, corner_faces) in CORNER_FACELET.iter().enumerate() {
+            let corner = value.cp[i] as usize;
+
+            for (j, f) in corner_faces.iter().enumerate() {
+                face.f[*f as usize] = CORNER_COLOR[corner][(j + (3 - value.co[i] as usize)) % 3];
+            }
+        }
+
+        for (i, edge_faces) in EDGE_FACELET.iter().enumerate() {
+            let edge = value.ep[i] as usize;
+
+            for (j, f) in edge_faces.iter().enumerate() {
+                face.f[*f as usize] = EDGE_COLOR[edge][(j + value.eo[i] as usize) % 2];
+            }
+        }
+
+        // TODO: check invalid facelet
+
+        Ok(face)
+    }
+}
 
 impl TryFrom<&str> for FaceCube {
     type Error = Error;
@@ -155,6 +183,7 @@ mod test {
     use super::*;
     use crate::cube::state::Corner::*;
     use crate::cube::state::Edge::*;
+    use crate::cube::state::SOLVED_STATE;
     use crate::State;
 
     #[test]
@@ -176,5 +205,24 @@ mod test {
         );
         // One list of moves that solves this state:
         // L2 B' D R F B' L U B R' U' B2 D L2 D2 R2 B2 D' B2 D F2 U
+    }
+
+    #[test]
+    fn test_cubie_to_facelet() {
+        let face_cube = FaceCube::try_from(&SOLVED_STATE).unwrap();
+
+        assert_eq!(face_cube, SOLVED_FACE_CUBE);
+
+        let face_string = "DRBLUURLDRBLRRBFLFFUBFFDRUDURRBDFBBULDUDLUDLBUFFDBFLRL";
+        let expected = FaceCube::try_from(face_string).unwrap();
+        let cubie = State {
+            cp: [DFL, UBL, DBR, UFR, UBR, DFR, UFL, DBL],
+            co: [0, 1, 0, 2, 0, 1, 0, 2],
+            ep: [DF, DB, DR, UF, FR, UB, UL, DL, UR, FL, BR, BL],
+            eo: [1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0],
+        };
+        let face_cube = FaceCube::try_from(&cubie).unwrap();
+
+        assert_eq!(face_cube, expected);
     }
 }
