@@ -126,14 +126,9 @@ impl State {
         self * move_state
     }
 
-    pub fn apply_moves(&self, moves: &Vec<Move>) -> Self {
-        let mut state = *self;
-
-        for m in moves {
-            state = state.apply_move(*m);
-        }
-
-        state
+    /// Applies the sequence of moves to the current state.
+    pub fn apply_moves(&self, moves: &[Move]) -> Self {
+        moves.iter().fold(*self, |acc, &m| acc.apply_move(m))
     }
 
     /// Returns the number of corner permutations needed to solve the corners.
@@ -169,17 +164,33 @@ impl State {
 
         count
     }
+
+    /// Returns the number of corner twist needed to orient the corners.
+    pub fn count_corner_twist(&self) -> u8 {
+        self.co.iter().fold(0, |acc, co| acc + ((3 - co) % 3))
+    }
+
+    /// Returns the number of edge twist needed to orient the edges.
+    pub fn count_edge_twist(&self) -> u8 {
+        self.eo.iter().sum()
+    }
+
+    /// Checks if State is a valid cubie representation.
+    pub fn is_solvable(&self) -> bool {
+        let c_perm = self.count_corner_perm();
+        let e_perm = self.count_edge_perm();
+        let c_twist = self.count_corner_twist();
+        let e_twist = self.count_edge_twist();
+        let has_even_permutation = c_perm % 2 == e_perm % 2;
+        let has_valid_twist = c_twist % 3 == 0 && e_twist % 2 == 0;
+
+        has_even_permutation && has_valid_twist
+    }
 }
 
 impl From<&Vec<Move>> for State {
     fn from(moves: &Vec<Move>) -> Self {
-        let mut state = SOLVED_STATE;
-
-        for m in moves {
-            state = state.apply_move(*m);
-        }
-
-        state
+        SOLVED_STATE.apply_moves(moves)
     }
 }
 
@@ -187,8 +198,8 @@ impl From<&Vec<Move>> for State {
 impl TryFrom<&FaceCube> for State {
     type Error = Error;
     fn try_from(face_cube: &FaceCube) -> Result<Self, Self::Error> {
-        let mut ori: usize = 0;
         let mut state = SOLVED_STATE;
+        let mut ori: usize = 0;
         let mut col1;
         let mut col2;
 
@@ -241,10 +252,7 @@ impl TryFrom<&FaceCube> for State {
             }
         }
 
-        let c_perm = state.count_corner_perm();
-        let e_perm = state.count_edge_perm();
-
-        if c_perm % 2 != e_perm % 2 {
+        if !state.is_solvable() {
             Err(Error::InvalidFaceletValue)
         } else {
             Ok(state)
@@ -325,11 +333,25 @@ mod test {
 
         assert_eq!(state.count_corner_perm(), 2);
         assert_eq!(state.count_edge_perm(), 2);
+
         let state = State::from(&vec![
             R, U3, R3, U3, R, U, R, D, R3, U3, R, D3, R3, U2, R3, U3,
         ]);
 
         assert_eq!(state.count_corner_perm(), 1);
         assert_eq!(state.count_edge_perm(), 1);
+    }
+
+    #[test]
+    fn test_twist_count() {
+        let state = SOLVED_STATE;
+
+        assert_eq!(state.count_corner_twist(), 0);
+        assert_eq!(state.count_edge_twist(), 0);
+
+        let state = State::from(&vec![R, U, R3, U3, R3, F, R, F3]);
+
+        assert_eq!(state.count_corner_twist(), 3);
+        assert_eq!(state.count_edge_twist(), 2);
     }
 }

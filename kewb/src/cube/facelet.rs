@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::{error::Error, State};
 
 /// Names the colors of the cube facelets: up, right, face, down, left, back.
@@ -5,6 +7,12 @@ use crate::{error::Error, State};
 #[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 pub enum Color {
     U, R, F, D, L, B,
+}
+
+impl fmt::Display for Color {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 impl TryFrom<char> for Color {
@@ -45,6 +53,10 @@ const SOLVED_FACE_CUBE: FaceCube = FaceCube {
 impl TryFrom<&State> for FaceCube {
     type Error = Error;
     fn try_from(value: &State) -> Result<Self, Self::Error> {
+        if !value.is_solvable() {
+            return Err(Error::InvalidCubieValue);
+        }
+
         let mut face = SOLVED_FACE_CUBE;
 
         for (i, corner_faces) in CORNER_FACELET.iter().enumerate() {
@@ -62,8 +74,6 @@ impl TryFrom<&State> for FaceCube {
                 face.f[*f as usize] = EDGE_COLOR[edge][(j + value.eo[i] as usize) % 2];
             }
         }
-
-        // TODO: check invalid facelet
 
         Ok(face)
     }
@@ -83,6 +93,15 @@ impl TryFrom<&str> for FaceCube {
         }
 
         Ok(FaceCube { f })
+    }
+}
+
+impl fmt::Display for FaceCube {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let acc = String::new();
+        let s = self.f.iter().fold(acc, |acc, f| format!("{acc}{f}"));
+
+        write!(f, "{s}")
     }
 }
 

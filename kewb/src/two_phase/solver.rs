@@ -167,7 +167,7 @@ impl Solution {
     }
 }
 
-/// Two phase solver struct for more control.
+/// Two phase solver.
 pub struct Solver<'a> {
     data_table: &'a DataTable,
     max_length: u8,
@@ -191,6 +191,14 @@ impl<'a> Solver<'a> {
             solution_phase2: vec![],
             best_solution: None,
         }
+    }
+
+    /// Resets the solver state.
+    pub fn clear(&mut self) {
+        self.initial_state = SOLVED_STATE;
+        self.solution_phase1.clear();
+        self.solution_phase2.clear();
+        self.best_solution.take();
     }
 
     /// Solves the cube using the two phase algorithm.
@@ -262,6 +270,7 @@ impl<'a> Solver<'a> {
             }
 
             self.solution_phase1.push(*m);
+
             let new_state = state.next(&self.data_table.move_table, i);
             let found = self.solve_phase1(new_state, depth - 1, time);
 
@@ -316,6 +325,7 @@ impl<'a> Solver<'a> {
             }
 
             self.solution_phase2.push(*m);
+
             let new_state = state.next(&self.data_table.move_table, i);
             let found = self.solve_phase2(new_state, depth - 1, time);
 
