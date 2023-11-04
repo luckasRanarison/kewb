@@ -1,5 +1,5 @@
 use super::utils::*;
-use crate::cube::{index::*, state::SOLVED_STATE};
+use crate::cube::{constants::*, index::*, state::SOLVED_STATE};
 use bincode::{Decode, Encode};
 
 /// Collection of moves table for navigating on the coordinate level.

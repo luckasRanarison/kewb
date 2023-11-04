@@ -44,6 +44,10 @@ const SOLVED_FACE_CUBE: FaceCube = FaceCube {
 impl TryFrom<&str> for FaceCube {
     type Error = Error;
     fn try_from(cube_string: &str) -> Result<Self, Self::Error> {
+        if cube_string.len() != 54 {
+            return Err(Error::InvalidFaceletString);
+        }
+
         let mut f: [Color; 54] = SOLVED_FACE_CUBE.f;
 
         for (i, c) in cube_string.chars().enumerate() {
@@ -151,6 +155,7 @@ mod test {
     use super::*;
     use crate::cube::state::Corner::*;
     use crate::cube::state::Edge::*;
+    use crate::State;
 
     #[test]
     fn test_facelet_to_cubie() {
@@ -158,11 +163,11 @@ mod test {
         // F L' B R' U R U B' L2 R' F2 U2 L' F2 D F U R' D R U' L' R2 D2
         let faces = "DRBLUURLDRBLRRBFLFFUBFFDRUDURRBDFBBULDUDLUDLBUFFDBFLRL";
         let face_cube = FaceCube::try_from(faces).unwrap();
+        let actual_state = State::try_from(&face_cube).unwrap();
 
-        let actual_state = crate::cube::state::State::try_from(&face_cube).unwrap();
         assert_eq!(
             actual_state,
-            crate::cube::state::State {
+            State {
                 cp: [DFL, UBL, DBR, UFR, UBR, DFR, UFL, DBL],
                 co: [0, 1, 0, 2, 0, 1, 0, 2],
                 ep: [DF, DB, DR, UF, FR, UB, UL, DL, UR, FL, BR, BL],

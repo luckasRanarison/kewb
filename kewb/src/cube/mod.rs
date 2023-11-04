@@ -1,3 +1,4 @@
+pub mod constants;
 pub mod facelet;
 pub mod index;
 pub mod moves;

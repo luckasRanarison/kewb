@@ -1,3 +1,5 @@
+use crate::constants::{CO_COUNT, CP_COUNT, EO_COUNT, EP_COUNT};
+
 use super::{
     index::{index_to_co, index_to_cp, index_to_eo, index_to_ep},
     state::State,
@@ -7,10 +9,10 @@ use rand::{thread_rng, Rng};
 pub fn generate_random_state() -> State {
     let mut rng = thread_rng();
     let mut state = State {
-        cp: index_to_cp(rng.gen_range(0..40320)),
-        co: index_to_co(rng.gen_range(0..2187)),
-        ep: index_to_ep(rng.gen_range(0..479001599)),
-        eo: index_to_eo(rng.gen_range(0..2048)),
+        cp: index_to_cp(rng.gen_range(0..CP_COUNT)),
+        co: index_to_co(rng.gen_range(0..CO_COUNT)),
+        ep: index_to_ep(rng.gen_range(0..EP_COUNT)),
+        eo: index_to_eo(rng.gen_range(0..EO_COUNT)),
     };
 
     let c_perm = state.count_corner_perm();

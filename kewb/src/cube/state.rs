@@ -1,6 +1,6 @@
+use self::{Corner::*, Edge::*, Move::*};
 use crate::error::Error;
 
-use self::{Corner::*, Edge::*, Move::*};
 use super::{facelet::*, moves::*};
 use std::ops::Mul;
 
