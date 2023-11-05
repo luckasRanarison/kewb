@@ -1,4 +1,4 @@
-use super::state::{Corner, Edge};
+use super::cubie::{Corner, Edge};
 
 pub fn co_to_index(corner: &[u8; 8]) -> u16 {
     let mut index = 0;
@@ -222,12 +222,12 @@ pub fn index_to_e_ep(mut index: u16) -> [Edge; 12] {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::cube::state::{Edge::*, SOLVED_STATE};
+    use crate::cube::cubie::{Edge::*, SOLVED_CUBIE_CUBE};
 
     #[test]
     fn test_co_to_index() {
-        assert_eq!(co_to_index(&SOLVED_STATE.co), 0);
-        assert_eq!(index_to_co(0), SOLVED_STATE.co);
+        assert_eq!(co_to_index(&SOLVED_CUBIE_CUBE.co), 0);
+        assert_eq!(index_to_co(0), SOLVED_CUBIE_CUBE.co);
 
         let co = [2, 0, 0, 1, 1, 0, 0, 2];
         assert_eq!(co_to_index(&co), 1494);
@@ -236,8 +236,8 @@ mod test {
 
     #[test]
     fn test_eo() {
-        assert_eq!(eo_to_index(&SOLVED_STATE.eo), 0);
-        assert_eq!(index_to_eo(0), SOLVED_STATE.eo);
+        assert_eq!(eo_to_index(&SOLVED_CUBIE_CUBE.eo), 0);
+        assert_eq!(index_to_eo(0), SOLVED_CUBIE_CUBE.eo);
 
         let eo = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
         assert_eq!(eo_to_index(&eo), 2047);
@@ -246,7 +246,7 @@ mod test {
 
     #[test]
     fn test_e_combo() {
-        assert_eq!(e_combo_to_index(&SOLVED_STATE.ep), 0);
+        assert_eq!(e_combo_to_index(&SOLVED_CUBIE_CUBE.ep), 0);
         let fake_combo = [BL, BR, FR, FL, UB, UB, UB, UB, UB, UB, UB, UB];
         assert_eq!(index_to_e_combo(0), fake_combo);
 
@@ -257,10 +257,10 @@ mod test {
 
     #[test]
     fn test_cp() {
-        assert_eq!(cp_to_index(&SOLVED_STATE.cp), 0);
-        assert_eq!(index_to_cp(0), SOLVED_STATE.cp);
+        assert_eq!(cp_to_index(&SOLVED_CUBIE_CUBE.cp), 0);
+        assert_eq!(index_to_cp(0), SOLVED_CUBIE_CUBE.cp);
 
-        let mut corners = SOLVED_STATE.cp;
+        let mut corners = SOLVED_CUBIE_CUBE.cp;
         corners.reverse();
         assert_eq!(cp_to_index(&corners), 40319);
         assert_eq!(index_to_cp(40319), corners);
@@ -268,8 +268,8 @@ mod test {
 
     #[test]
     fn test_ud_ep() {
-        assert_eq!(ud_ep_to_index(&SOLVED_STATE.ep), 0);
-        assert_eq!(index_to_ud_ep(0), SOLVED_STATE.ep);
+        assert_eq!(ud_ep_to_index(&SOLVED_CUBIE_CUBE.ep), 0);
+        assert_eq!(index_to_ud_ep(0), SOLVED_CUBIE_CUBE.ep);
 
         let edges = [BL, BR, FR, FL, DL, DB, DR, DF, UL, UF, UR, UB];
         assert_eq!(ud_ep_to_index(&edges), 40319);
@@ -278,8 +278,8 @@ mod test {
 
     #[test]
     fn test_e_ep() {
-        assert_eq!(e_ep_to_index(&SOLVED_STATE.ep), 0);
-        assert_eq!(index_to_e_ep(0), SOLVED_STATE.ep);
+        assert_eq!(e_ep_to_index(&SOLVED_CUBIE_CUBE.ep), 0);
+        assert_eq!(index_to_e_ep(0), SOLVED_CUBIE_CUBE.ep);
 
         let edges = [FL, FR, BR, BL, UB, UR, UF, UL, DF, DR, DB, DL];
         assert_eq!(e_ep_to_index(&edges), 23);
@@ -288,10 +288,10 @@ mod test {
 
     #[test]
     fn test_ep() {
-        assert_eq!(ep_to_index(&SOLVED_STATE.ep), 0);
-        assert_eq!(index_to_ep(0), SOLVED_STATE.ep);
+        assert_eq!(ep_to_index(&SOLVED_CUBIE_CUBE.ep), 0);
+        assert_eq!(index_to_ep(0), SOLVED_CUBIE_CUBE.ep);
 
-        let mut edges = SOLVED_STATE.ep;
+        let mut edges = SOLVED_CUBIE_CUBE.ep;
         edges.reverse();
         assert_eq!(ep_to_index(&edges), 479001599);
         assert_eq!(index_to_ep(479001599), edges);

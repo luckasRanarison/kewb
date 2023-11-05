@@ -4,9 +4,9 @@ use std::{
 };
 
 use crate::cube::{
+    cubie::{CubieCube, SOLVED_CUBIE_CUBE},
     index::*,
     moves::{is_move_available, Move},
-    state::{State, SOLVED_STATE},
 };
 
 use super::pruning::PruningTable;
@@ -52,8 +52,8 @@ impl Phase for Phase1State {
     }
 }
 
-impl From<State> for Phase1State {
-    fn from(value: State) -> Self {
+impl From<CubieCube> for Phase1State {
+    fn from(value: CubieCube) -> Self {
         let co_index = co_to_index(&value.co).into();
         let eo_index = eo_to_index(&value.eo).into();
         let e_combo_index = e_combo_to_index(&value.ep).into();
@@ -72,8 +72,8 @@ struct Phase2State {
     e_ep_index: usize,
 }
 
-impl From<State> for Phase2State {
-    fn from(value: State) -> Self {
+impl From<CubieCube> for Phase2State {
+    fn from(value: CubieCube) -> Self {
         let cp_index = cp_to_index(&value.cp).into();
         let ep_index = ud_ep_to_index(&value.ep).into();
         let e_ep_index = e_ep_to_index(&value.ep).into();
@@ -172,7 +172,7 @@ pub struct Solver<'a> {
     data_table: &'a DataTable,
     max_length: u8,
     timeout: Option<Duration>,
-    initial_state: State,
+    initial_state: CubieCube,
     solution_phase1: Vec<Move>,
     solution_phase2: Vec<Move>,
     best_solution: Option<Solution>,
@@ -184,7 +184,7 @@ impl<'a> Solver<'a> {
 
         Self {
             data_table,
-            initial_state: SOLVED_STATE,
+            initial_state: SOLVED_CUBIE_CUBE,
             max_length,
             timeout,
             solution_phase1: vec![],
@@ -195,14 +195,14 @@ impl<'a> Solver<'a> {
 
     /// Resets the solver state.
     pub fn clear(&mut self) {
-        self.initial_state = SOLVED_STATE;
+        self.initial_state = SOLVED_CUBIE_CUBE;
         self.solution_phase1.clear();
         self.solution_phase2.clear();
         self.best_solution.take();
     }
 
     /// Solves the cube using the two phase algorithm.
-    pub fn solve(&mut self, state: State) -> Option<Solution> {
+    pub fn solve(&mut self, state: CubieCube) -> Option<Solution> {
         self.initial_state = state;
 
         let start = Instant::now();
@@ -342,25 +342,20 @@ impl<'a> Solver<'a> {
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        cube::{
-            moves::Move::*,
-            state::{State, SOLVED_STATE},
-        },
-        DataTable, Solver,
-    };
+    use super::*;
+    use crate::Move::*;
 
     #[test]
     fn test_solve() {
         let scramble = vec![
             D3, R2, L3, U2, F, R, F3, D2, R2, F2, B2, U2, R2, F2, U, R2, U3, R2, D2,
         ];
-        let state = State::from(&scramble);
+        let state = CubieCube::from(&scramble);
         let table = DataTable::default();
         let mut solver = Solver::new(&table, 23, None);
         let solution = solver.solve(state);
         let solved_state = state.apply_moves(&solution.unwrap().get_all_moves());
 
-        assert_eq!(solved_state, SOLVED_STATE);
+        assert_eq!(solved_state, SOLVED_CUBIE_CUBE);
     }
 }

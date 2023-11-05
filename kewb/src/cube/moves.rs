@@ -1,7 +1,7 @@
 use std::fmt;
 
 use self::Move::*;
-use super::state::{Corner::*, Edge::*, State};
+use super::cubie::{Corner::*, CubieCube, Edge::*};
 
 /// Layer moves, Up, Down, Right, Left, Face, Back.
 /// $ clockwise, $2 double, $3 counter-clockwise.
@@ -109,42 +109,42 @@ pub fn scramble_from_string(string: &str) -> Option<Vec<Move>> {
     Some(scramble)
 }
 
-pub const U_MOVE: State = State {
+pub const U_MOVE: CubieCube = CubieCube {
     cp: [UFL, UBL, UBR, UFR, DFL, DFR, DBR, DBL],
     co: [0, 0, 0, 0, 0, 0, 0, 0],
     ep: [BL, BR, FR, FL, UL, UB, UR, UF, DF, DR, DB, DL],
     eo: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 };
 
-pub const D_MOVE: State = State {
+pub const D_MOVE: CubieCube = CubieCube {
     cp: [UBL, UBR, UFR, UFL, DBL, DFL, DFR, DBR],
     co: [0, 0, 0, 0, 0, 0, 0, 0],
     ep: [BL, BR, FR, FL, UB, UR, UF, UL, DL, DF, DR, DB],
     eo: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 };
 
-pub const R_MOVE: State = State {
+pub const R_MOVE: CubieCube = CubieCube {
     cp: [UBL, UFR, DFR, UFL, DFL, DBR, UBR, DBL],
     co: [0, 1, 2, 0, 0, 1, 2, 0],
     ep: [BL, UR, DR, FL, UB, FR, UF, UL, DF, BR, DB, DL],
     eo: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 };
 
-pub const L_MOVE: State = State {
+pub const L_MOVE: CubieCube = CubieCube {
     cp: [DBL, UBR, UFR, UBL, UFL, DFR, DBR, DFL],
     co: [2, 0, 0, 1, 2, 0, 0, 1],
     ep: [DL, BR, FR, UL, UB, UR, UF, BL, DF, DR, DB, FL],
     eo: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 };
 
-pub const F_MOVE: State = State {
+pub const F_MOVE: CubieCube = CubieCube {
     cp: [UBL, UBR, UFL, DFL, DFR, UFR, DBR, DBL],
     co: [0, 0, 1, 2, 1, 2, 0, 0],
     ep: [BL, BR, UF, DF, UB, UR, FL, UL, FR, DR, DB, DL],
     eo: [0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0],
 };
 
-pub const B_MOVE: State = State {
+pub const B_MOVE: CubieCube = CubieCube {
     cp: [UBR, DBR, UFR, UFL, DFL, DFR, DBL, UBL],
     co: [1, 2, 0, 0, 0, 0, 1, 2],
     ep: [UB, DB, FR, FL, BR, UR, UF, UL, DF, DR, BL, DL],

@@ -67,7 +67,7 @@ impl TryFrom<u8> for Edge {
 
 /// Cube on the cubie level.
 #[derive(Debug, PartialEq, Clone, Copy)]
-pub struct State {
+pub struct CubieCube {
     /// Corner permutation, relative to SOLVED_STATE.
     pub cp: [Corner; 8],
     /// Corner orientation, 3 possible values: 0 (correctly oriented), 1 (twisted clockwise), 2 (twisted counter-clockwise).
@@ -78,11 +78,11 @@ pub struct State {
     pub eo: [u8; 12],
 }
 
-impl Mul for State {
+impl Mul for CubieCube {
     type Output = Self;
 
-    fn mul(self, rhs: State) -> Self::Output {
-        let mut res = SOLVED_STATE;
+    fn mul(self, rhs: CubieCube) -> Self::Output {
+        let mut res = SOLVED_CUBIE_CUBE;
         // (A * B).c = A(B(x).c).c
         // (A * B).o = A(B(x).c).o + B(x).o
 
@@ -100,7 +100,7 @@ impl Mul for State {
     }
 }
 
-impl State {
+impl CubieCube {
     pub fn apply_move(self, move_name: Move) -> Self {
         let move_state = match move_name {
             U => U_MOVE,
@@ -188,17 +188,17 @@ impl State {
     }
 }
 
-impl From<&Vec<Move>> for State {
+impl From<&Vec<Move>> for CubieCube {
     fn from(moves: &Vec<Move>) -> Self {
-        SOLVED_STATE.apply_moves(moves)
+        SOLVED_CUBIE_CUBE.apply_moves(moves)
     }
 }
 
 /// Gives State (cubie) representation of a face cube (facelet).
-impl TryFrom<&FaceCube> for State {
+impl TryFrom<&FaceCube> for CubieCube {
     type Error = Error;
     fn try_from(face_cube: &FaceCube) -> Result<Self, Self::Error> {
-        let mut state = SOLVED_STATE;
+        let mut state = SOLVED_CUBIE_CUBE;
         let mut ori: usize = 0;
         let mut col1;
         let mut col2;
@@ -260,7 +260,7 @@ impl TryFrom<&FaceCube> for State {
     }
 }
 
-pub const SOLVED_STATE: State = State {
+pub const SOLVED_CUBIE_CUBE: CubieCube = CubieCube {
     cp: [UBL, UBR, UFR, UFL, DFL, DFR, DBR, DBL],
     co: [0, 0, 0, 0, 0, 0, 0, 0],
     ep: [BL, BR, FR, FL, UB, UR, UF, UL, DF, DR, DB, DL],
@@ -269,21 +269,20 @@ pub const SOLVED_STATE: State = State {
 
 #[cfg(test)]
 mod test {
-    use super::{Corner::*, Edge::*, Move::*, SOLVED_STATE};
-    use crate::cube::{moves::*, state::State};
+    use super::*;
 
     #[test]
     fn test_mult() {
-        let state = SOLVED_STATE.apply_move(R);
+        let state = SOLVED_CUBIE_CUBE.apply_move(R);
         assert_eq!(state, R_MOVE);
 
-        let r2_state = SOLVED_STATE.apply_move(R).apply_move(R);
+        let r2_state = SOLVED_CUBIE_CUBE.apply_move(R).apply_move(R);
         assert_eq!(r2_state, R_MOVE * R_MOVE);
 
         let r3_state = r2_state.apply_move(R);
         assert_eq!(r3_state, r2_state * R_MOVE);
 
-        let fr_state = State {
+        let fr_state = CubieCube {
             cp: [UBL, UFL, UFR, DFL, DFR, DBR, UBR, DBL],
             co: [0, 2, 1, 2, 1, 1, 2, 0],
             ep: [BL, UR, DR, DF, UB, UF, FL, UL, FR, BR, DB, DL],
@@ -299,9 +298,9 @@ mod test {
         let moves = vec![
             R, U, R3, U3, R, U, R3, U3, R, U, R3, U3, R, U, R3, U3, R, U, R3, U3, R, U, R3, U3,
         ];
-        let state = SOLVED_STATE.apply_moves(&moves);
+        let state = SOLVED_CUBIE_CUBE.apply_moves(&moves);
 
-        assert_eq!(state, SOLVED_STATE);
+        assert_eq!(state, SOLVED_CUBIE_CUBE);
     }
 
     #[test]
@@ -310,9 +309,9 @@ mod test {
         let scramble = vec![
             U, F3, D3, F2, D, B2, D3, R2, U3, F2, R2, D2, R2, U3, L, B, L, R, F3, D, B3,
         ];
-        let state = SOLVED_STATE.apply_moves(&scramble);
+        let state = SOLVED_CUBIE_CUBE.apply_moves(&scramble);
 
-        let expected = State {
+        let expected = CubieCube {
             cp: [DFL, UBL, DFR, UBR, UFL, DBR, DBL, UFR],
             co: [1, 2, 2, 0, 0, 0, 2, 2],
             ep: [UF, UR, DL, DB, BL, DF, UB, FL, UL, BR, FR, DR],
@@ -324,17 +323,17 @@ mod test {
 
     #[test]
     fn test_perm_count() {
-        let state = SOLVED_STATE;
+        let state = SOLVED_CUBIE_CUBE;
 
         assert_eq!(state.count_corner_perm(), 0);
         assert_eq!(state.count_edge_perm(), 0);
 
-        let state = State::from(&vec![R, U, R3, U3]);
+        let state = CubieCube::from(&vec![R, U, R3, U3]);
 
         assert_eq!(state.count_corner_perm(), 2);
         assert_eq!(state.count_edge_perm(), 2);
 
-        let state = State::from(&vec![
+        let state = CubieCube::from(&vec![
             R, U3, R3, U3, R, U, R, D, R3, U3, R, D3, R3, U2, R3, U3,
         ]);
 
@@ -344,12 +343,12 @@ mod test {
 
     #[test]
     fn test_twist_count() {
-        let state = SOLVED_STATE;
+        let state = SOLVED_CUBIE_CUBE;
 
         assert_eq!(state.count_corner_twist(), 0);
         assert_eq!(state.count_edge_twist(), 0);
 
-        let state = State::from(&vec![R, U, R3, U3, R3, F, R, F3]);
+        let state = CubieCube::from(&vec![R, U, R3, U3, R3, F, R, F3]);
 
         assert_eq!(state.count_corner_twist(), 3);
         assert_eq!(state.count_edge_twist(), 2);

@@ -1,14 +1,15 @@
 use crate::constants::{CO_COUNT, CP_COUNT, EO_COUNT, EP_COUNT};
 
 use super::{
+    cubie::CubieCube,
     index::{index_to_co, index_to_cp, index_to_eo, index_to_ep},
-    state::State,
 };
 use rand::{thread_rng, Rng};
 
-pub fn generate_random_state() -> State {
+/// Generates a random state on the cubie level.
+pub fn generate_random_state() -> CubieCube {
     let mut rng = thread_rng();
-    let mut state = State {
+    let mut state = CubieCube {
         cp: index_to_cp(rng.gen_range(0..CP_COUNT)),
         co: index_to_co(rng.gen_range(0..CO_COUNT)),
         ep: index_to_ep(rng.gen_range(0..EP_COUNT)),

@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{error::Error, State};
+use crate::{error::Error, CubieCube};
 
 /// Names the colors of the cube facelets: up, right, face, down, left, back.
 #[rustfmt::skip]
@@ -50,9 +50,9 @@ const SOLVED_FACE_CUBE: FaceCube = FaceCube {
     ],
 };
 
-impl TryFrom<&State> for FaceCube {
+impl TryFrom<&CubieCube> for FaceCube {
     type Error = Error;
-    fn try_from(value: &State) -> Result<Self, Self::Error> {
+    fn try_from(value: &CubieCube) -> Result<Self, Self::Error> {
         if !value.is_solvable() {
             return Err(Error::InvalidCubieValue);
         }
@@ -200,10 +200,7 @@ pub const EDGE_COLOR: [[Color; 2]; 12] = [
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::cube::state::Corner::*;
-    use crate::cube::state::Edge::*;
-    use crate::cube::state::SOLVED_STATE;
-    use crate::State;
+    use crate::cube::cubie::{Corner::*, Edge::*, SOLVED_CUBIE_CUBE};
 
     #[test]
     fn test_facelet_to_cubie() {
@@ -211,11 +208,11 @@ mod test {
         // F L' B R' U R U B' L2 R' F2 U2 L' F2 D F U R' D R U' L' R2 D2
         let faces = "DRBLUURLDRBLRRBFLFFUBFFDRUDURRBDFBBULDUDLUDLBUFFDBFLRL";
         let face_cube = FaceCube::try_from(faces).unwrap();
-        let actual_state = State::try_from(&face_cube).unwrap();
+        let actual_state = CubieCube::try_from(&face_cube).unwrap();
 
         assert_eq!(
             actual_state,
-            State {
+            CubieCube {
                 cp: [DFL, UBL, DBR, UFR, UBR, DFR, UFL, DBL],
                 co: [0, 1, 0, 2, 0, 1, 0, 2],
                 ep: [DF, DB, DR, UF, FR, UB, UL, DL, UR, FL, BR, BL],
@@ -228,13 +225,13 @@ mod test {
 
     #[test]
     fn test_cubie_to_facelet() {
-        let face_cube = FaceCube::try_from(&SOLVED_STATE).unwrap();
+        let face_cube = FaceCube::try_from(&SOLVED_CUBIE_CUBE).unwrap();
 
         assert_eq!(face_cube, SOLVED_FACE_CUBE);
 
         let face_string = "DRBLUURLDRBLRRBFLFFUBFFDRUDURRBDFBBULDUDLUDLBUFFDBFLRL";
         let expected = FaceCube::try_from(face_string).unwrap();
-        let cubie = State {
+        let cubie = CubieCube {
             cp: [DFL, UBL, DBR, UFR, UBR, DFR, UFL, DBL],
             co: [0, 1, 0, 2, 0, 1, 0, 2],
             ep: [DF, DB, DR, UF, FR, UB, UL, DL, UR, FL, BR, BL],

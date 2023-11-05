@@ -3,7 +3,7 @@
 pub(crate) mod cube;
 pub(crate) mod two_phase;
 
-pub use cube::{facelet::Color, facelet::FaceCube, moves::Move, state::State};
+pub use cube::{cubie::CubieCube, facelet::Color, facelet::FaceCube, moves::Move};
 pub use two_phase::solver::{Solution, Solver};
 pub use two_phase::utils::DataTable;
 

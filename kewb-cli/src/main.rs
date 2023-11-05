@@ -10,7 +10,7 @@ use kewb::{
     utils::{generate_random_state, scramble_from_string},
     Color,
 };
-use kewb::{FaceCube, Move, Solver, State};
+use kewb::{CubieCube, FaceCube, Move, Solver};
 use spinners::Spinner;
 use std::{
     io::{self, stdout},
@@ -62,7 +62,12 @@ enum Commands {
     },
 }
 
-fn solve_state(state: State, max: u8, timeout: Option<f32>, details: bool) -> Result<(), Error> {
+fn solve_state(
+    state: CubieCube,
+    max: u8,
+    timeout: Option<f32>,
+    details: bool,
+) -> Result<(), Error> {
     let table = decode_table(TABLE)?;
     let mut solver = Solver::new(&table, max, timeout);
     let mut spinner = Spinner::new(spinners::Spinners::Dots, "Solving".to_owned());
@@ -101,7 +106,7 @@ fn solve_scramble(
     details: bool,
 ) -> Result<(), Error> {
     if let Some(scramble) = scramble_from_string(scramble) {
-        let state = State::from(&scramble);
+        let state = CubieCube::from(&scramble);
         Ok(solve_state(state, max, timeout, details)?)
     } else {
         Err(Error::InvalidScramble)
@@ -110,7 +115,7 @@ fn solve_scramble(
 
 fn solve_facelet(facelet: &str, max: u8, timeout: Option<f32>, details: bool) -> Result<(), Error> {
     if let Ok(face_cube) = FaceCube::try_from(facelet) {
-        match State::try_from(&face_cube) {
+        match CubieCube::try_from(&face_cube) {
             Ok(state) => Ok(solve_state(state, max, timeout, details)?),
             Err(_) => Err(Error::InvalidFaceletValue),
         }
