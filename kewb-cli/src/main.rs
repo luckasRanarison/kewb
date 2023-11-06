@@ -7,7 +7,7 @@ use crossterm::{
 use kewb::{
     error::Error,
     fs::{decode_table, write_table},
-    generators::generate_random_state,
+    generators::{generate_random_state, generate_state_cross_solved},
     utils::scramble_from_string,
     Color,
 };
@@ -73,6 +73,7 @@ enum Commands {
 #[derive(ValueEnum, Clone)]
 enum State {
     Random,
+    CrossSolved,
 }
 
 fn solve(
@@ -217,6 +218,7 @@ fn scramble(state: &State, number: usize, preview: bool) -> Result<(), Error> {
         let mut solver = Solver::new(&table, 25, None);
         let state = match state {
             State::Random => generate_random_state(),
+            State::CrossSolved => generate_state_cross_solved(),
         };
         let scramble = solver.solve(state).unwrap().get_all_moves();
         let scramble: Vec<Move> = scramble.iter().rev().map(|m| m.get_inverse()).collect();

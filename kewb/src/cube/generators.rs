@@ -2,7 +2,9 @@ use crate::constants::{CO_COUNT, CP_COUNT, EO_COUNT, EP_COUNT};
 
 use super::{
     cubie::CubieCube,
-    index::{index_to_co, index_to_cp, index_to_eo, index_to_ep},
+    index::{
+        index_to_co, index_to_cp, index_to_eo, index_to_eo_cross, index_to_ep, index_to_ep_cross,
+    },
 };
 use rand::{rngs::ThreadRng, seq::SliceRandom, thread_rng, Rng};
 
@@ -19,6 +21,23 @@ fn fix_parity(state: &mut CubieCube, rng: &mut ThreadRng, corners: Vec<usize>, e
         let b = *pos[1];
         state.cp.swap(a, b)
     }
+}
+
+/// Generates a random state with solved cross.
+pub fn generate_state_cross_solved() -> CubieCube {
+    let mut rng = thread_rng();
+    let mut state = CubieCube {
+        cp: index_to_cp(rng.gen_range(0..CP_COUNT)),
+        co: index_to_co(rng.gen_range(0..CO_COUNT)),
+        ep: index_to_ep_cross(rng.gen_range(0..40320)),
+        eo: index_to_eo_cross(rng.gen_range(0..128)),
+    };
+
+    if !state.is_solvable() {
+        fix_parity(&mut state, &mut rng, (0..8).collect(), (0..8).collect())
+    }
+
+    state
 }
 
 /// Generates a random state on the cubie level.
