@@ -1,4 +1,4 @@
-use clap::{arg, command, Parser, Subcommand};
+use clap::{arg, command, Parser, Subcommand, ValueEnum};
 use crossterm::{
     cursor::{MoveLeft, MoveRight, MoveUp},
     execute,
@@ -7,7 +7,8 @@ use crossterm::{
 use kewb::{
     error::Error,
     fs::{decode_table, write_table},
-    utils::{generate_random_state, scramble_from_string},
+    generators::generate_random_state,
+    utils::scramble_from_string,
     Color,
 };
 use kewb::{CubieCube, FaceCube, Move, Solver};
@@ -54,6 +55,9 @@ enum Commands {
 
     #[command(about = "generates scramble")]
     Scramble {
+        #[arg(default_value = "random")]
+        state: State,
+
         #[arg(short, long, default_value_t = 1)]
         number: usize,
 
@@ -63,6 +67,12 @@ enum Commands {
 
     #[command(about = "generates the table used by the solver")]
     Table { path: String },
+}
+
+// TODO: Add more state generators
+#[derive(ValueEnum, Clone)]
+enum State {
+    Random,
 }
 
 fn solve(
@@ -196,7 +206,7 @@ fn print_facelet(facelet: &FaceCube) -> Result<(), io::Error> {
     Ok(())
 }
 
-fn scramble(number: usize, preview: bool) -> Result<(), Error> {
+fn scramble(state: &State, number: usize, preview: bool) -> Result<(), Error> {
     let mut spinner = Spinner::new(spinners::Spinners::Dots, "Generating scramble".to_owned());
     let mut scrambles = Vec::new();
     let mut states = Vec::new();
@@ -205,7 +215,9 @@ fn scramble(number: usize, preview: bool) -> Result<(), Error> {
 
     for _ in 0..number {
         let mut solver = Solver::new(&table, 25, None);
-        let state = generate_random_state();
+        let state = match state {
+            State::Random => generate_random_state(),
+        };
         let scramble = solver.solve(state).unwrap().get_all_moves();
         let scramble: Vec<Move> = scramble.iter().rev().map(|m| m.get_inverse()).collect();
 
@@ -267,7 +279,11 @@ fn main() {
             timeout,
             details,
         }) => solve(scramble, facelet, *max, *timeout, *details),
-        Some(Commands::Scramble { number, preview }) => scramble(*number, *preview),
+        Some(Commands::Scramble {
+            state,
+            number,
+            preview,
+        }) => scramble(&state, *number, *preview),
         Some(Commands::Table { path }) => table(path),
         _ => Ok(()),
     };

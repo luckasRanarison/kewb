@@ -34,7 +34,12 @@ pub mod index {
 
 /// Some utility functions.
 pub mod utils {
-    pub use crate::cube::{moves::scramble_from_string, utils::generate_random_state};
+    pub use crate::cube::moves::scramble_from_string;
+}
+
+/// Module containing functions for generating some cubie level states.
+pub mod generators {
+    pub use crate::cube::generators::*;
 }
 
 pub mod error;
