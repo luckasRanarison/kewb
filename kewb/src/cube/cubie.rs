@@ -78,11 +78,25 @@ pub struct CubieCube {
     pub eo: [u8; 12],
 }
 
+/// Solved cube on the Cubie level.
+pub const SOLVED_CUBIE_CUBE: CubieCube = CubieCube {
+    cp: [UBL, UBR, UFR, UFL, DFL, DFR, DBR, DBL],
+    co: [0, 0, 0, 0, 0, 0, 0, 0],
+    ep: [BL, BR, FR, FL, UB, UR, UF, UL, DF, DR, DB, DL],
+    eo: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+};
+
+impl Default for CubieCube {
+    fn default() -> Self {
+        SOLVED_CUBIE_CUBE
+    }
+}
+
 impl Mul for CubieCube {
     type Output = Self;
 
     fn mul(self, rhs: CubieCube) -> Self::Output {
-        let mut res = SOLVED_CUBIE_CUBE;
+        let mut res = CubieCube::default();
         // (A * B).c = A(B(x).c).c
         // (A * B).o = A(B(x).c).o + B(x).o
 
@@ -131,6 +145,16 @@ impl CubieCube {
         moves.iter().fold(*self, |acc, &m| acc.apply_move(m))
     }
 
+    /// Returns the number of corner twist needed to orient the corners.
+    pub fn count_corner_twist(&self) -> u8 {
+        self.co.iter().fold(0, |acc, co| acc + ((3 - co) % 3))
+    }
+
+    /// Returns the number of edge twist needed to orient the edges.
+    pub fn count_edge_twist(&self) -> u8 {
+        self.eo.iter().sum()
+    }
+
     /// Returns the number of corner permutations needed to solve the corners.
     pub fn count_corner_perm(&self) -> u8 {
         let mut count = 0;
@@ -165,17 +189,7 @@ impl CubieCube {
         count
     }
 
-    /// Returns the number of corner twist needed to orient the corners.
-    pub fn count_corner_twist(&self) -> u8 {
-        self.co.iter().fold(0, |acc, co| acc + ((3 - co) % 3))
-    }
-
-    /// Returns the number of edge twist needed to orient the edges.
-    pub fn count_edge_twist(&self) -> u8 {
-        self.eo.iter().sum()
-    }
-
-    /// Checks if State is a valid cubie representation.
+    /// Checks if CubieCube is a valid cubie representation.
     pub fn is_solvable(&self) -> bool {
         let c_perm = self.count_corner_perm();
         let e_perm = self.count_edge_perm();
@@ -190,15 +204,15 @@ impl CubieCube {
 
 impl From<&Vec<Move>> for CubieCube {
     fn from(moves: &Vec<Move>) -> Self {
-        SOLVED_CUBIE_CUBE.apply_moves(moves)
+        CubieCube::default().apply_moves(moves)
     }
 }
 
-/// Gives State (cubie) representation of a face cube (facelet).
+/// Gives cubie representation of a face cube (facelet).
 impl TryFrom<&FaceCube> for CubieCube {
     type Error = Error;
     fn try_from(face_cube: &FaceCube) -> Result<Self, Self::Error> {
-        let mut state = SOLVED_CUBIE_CUBE;
+        let mut state = CubieCube::default();
         let mut ori: usize = 0;
         let mut col1;
         let mut col2;
@@ -260,23 +274,16 @@ impl TryFrom<&FaceCube> for CubieCube {
     }
 }
 
-pub const SOLVED_CUBIE_CUBE: CubieCube = CubieCube {
-    cp: [UBL, UBR, UFR, UFL, DFL, DFR, DBR, DBL],
-    co: [0, 0, 0, 0, 0, 0, 0, 0],
-    ep: [BL, BR, FR, FL, UB, UR, UF, UL, DF, DR, DB, DL],
-    eo: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-};
-
 #[cfg(test)]
 mod test {
     use super::*;
 
     #[test]
     fn test_mult() {
-        let state = SOLVED_CUBIE_CUBE.apply_move(R);
+        let state = CubieCube::default().apply_move(R);
         assert_eq!(state, R_MOVE);
 
-        let r2_state = SOLVED_CUBIE_CUBE.apply_move(R).apply_move(R);
+        let r2_state = CubieCube::default().apply_move(R).apply_move(R);
         assert_eq!(r2_state, R_MOVE * R_MOVE);
 
         let r3_state = r2_state.apply_move(R);
@@ -298,7 +305,7 @@ mod test {
         let moves = vec![
             R, U, R3, U3, R, U, R3, U3, R, U, R3, U3, R, U, R3, U3, R, U, R3, U3, R, U, R3, U3,
         ];
-        let state = SOLVED_CUBIE_CUBE.apply_moves(&moves);
+        let state = CubieCube::default().apply_moves(&moves);
 
         assert_eq!(state, SOLVED_CUBIE_CUBE);
     }
@@ -309,7 +316,7 @@ mod test {
         let scramble = vec![
             U, F3, D3, F2, D, B2, D3, R2, U3, F2, R2, D2, R2, U3, L, B, L, R, F3, D, B3,
         ];
-        let state = SOLVED_CUBIE_CUBE.apply_moves(&scramble);
+        let state = CubieCube::default().apply_moves(&scramble);
 
         let expected = CubieCube {
             cp: [DFL, UBL, DFR, UBR, UFL, DBR, DBL, UFR],
@@ -323,7 +330,7 @@ mod test {
 
     #[test]
     fn test_perm_count() {
-        let state = SOLVED_CUBIE_CUBE;
+        let state = CubieCube::default();
 
         assert_eq!(state.count_corner_perm(), 0);
         assert_eq!(state.count_edge_perm(), 0);
@@ -343,7 +350,7 @@ mod test {
 
     #[test]
     fn test_twist_count() {
-        let state = SOLVED_CUBIE_CUBE;
+        let state = CubieCube::default();
 
         assert_eq!(state.count_corner_twist(), 0);
         assert_eq!(state.count_edge_twist(), 0);

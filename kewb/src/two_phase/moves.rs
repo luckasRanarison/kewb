@@ -1,5 +1,5 @@
 use super::utils::*;
-use crate::cube::{constants::*, cubie::SOLVED_CUBIE_CUBE, index::*};
+use crate::cube::{constants::*, cubie::CubieCube, index::*};
 use bincode::{Decode, Encode};
 
 /// Collection of moves table for navigating on the coordinate level.
@@ -31,8 +31,10 @@ pub fn get_co_table() -> Table<u16> {
 
     for i in 0..CO_COUNT {
         let co = index_to_co(i);
-        let mut state = SOLVED_CUBIE_CUBE;
-        state.co = co;
+        let state = CubieCube {
+            co,
+            ..Default::default()
+        };
 
         for (j, m) in ALL_MOVES.iter().enumerate() {
             let new_state = state.apply_move(*m);
@@ -48,8 +50,10 @@ pub fn get_eo_table() -> Table<u16> {
 
     for i in 0..EO_COUNT {
         let eo = index_to_eo(i);
-        let mut state = SOLVED_CUBIE_CUBE;
-        state.eo = eo;
+        let state = CubieCube {
+            eo,
+            ..Default::default()
+        };
 
         for (j, m) in ALL_MOVES.iter().enumerate() {
             let new_state = state.apply_move(*m);
@@ -64,8 +68,10 @@ pub fn get_e_combo_table() -> Table<u16> {
     let mut e_combo_table = vec![vec![0; 18]; E_COMBO_COUNT as usize];
     for i in 0..E_COMBO_COUNT {
         let ep = index_to_e_combo(i);
-        let mut state = SOLVED_CUBIE_CUBE;
-        state.ep = ep;
+        let state = CubieCube {
+            ep,
+            ..Default::default()
+        };
 
         for (j, m) in ALL_MOVES.iter().enumerate() {
             let new_state = state.apply_move(*m);
@@ -81,8 +87,10 @@ pub fn get_cp_table() -> Table<u16> {
 
     for i in 0..CP_COUNT {
         let cp = index_to_cp(i);
-        let mut state = SOLVED_CUBIE_CUBE;
-        state.cp = cp;
+        let state = CubieCube {
+            cp,
+            ..Default::default()
+        };
 
         for (j, m) in PHASE2_MOVES.iter().enumerate() {
             let new_state = state.apply_move(*m);
@@ -98,8 +106,10 @@ pub fn get_ud_ep_table() -> Table<u16> {
 
     for i in 0..UD_EP_COUNT {
         let ep = index_to_ud_ep(i);
-        let mut state = SOLVED_CUBIE_CUBE;
-        state.ep = ep;
+        let state = CubieCube {
+            ep,
+            ..Default::default()
+        };
 
         for (j, m) in PHASE2_MOVES.iter().enumerate() {
             let new_state = state.apply_move(*m);
@@ -115,8 +125,10 @@ pub fn get_e_ep_table() -> Table<u16> {
 
     for i in 0..E_EP_COUNT {
         let ep = index_to_e_ep(i);
-        let mut state = SOLVED_CUBIE_CUBE;
-        state.ep = ep;
+        let state = CubieCube {
+            ep,
+            ..Default::default()
+        };
 
         for (j, m) in PHASE2_MOVES.iter().enumerate() {
             let new_state = state.apply_move(*m);

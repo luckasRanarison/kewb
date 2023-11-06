@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::cube::{
-    cubie::{CubieCube, SOLVED_CUBIE_CUBE},
+    cubie::CubieCube,
     index::*,
     moves::{is_move_available, Move},
 };
@@ -184,7 +184,7 @@ impl<'a> Solver<'a> {
 
         Self {
             data_table,
-            initial_state: SOLVED_CUBIE_CUBE,
+            initial_state: CubieCube::default(),
             max_length,
             timeout,
             solution_phase1: vec![],
@@ -195,7 +195,7 @@ impl<'a> Solver<'a> {
 
     /// Resets the solver state.
     pub fn clear(&mut self) {
-        self.initial_state = SOLVED_CUBIE_CUBE;
+        self.initial_state = CubieCube::default();
         self.solution_phase1.clear();
         self.solution_phase2.clear();
         self.best_solution.take();
@@ -343,7 +343,7 @@ impl<'a> Solver<'a> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::Move::*;
+    use crate::{cube::cubie::SOLVED_CUBIE_CUBE, Move::*};
 
     #[test]
     fn test_solve() {

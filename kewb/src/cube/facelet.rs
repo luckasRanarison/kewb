@@ -38,8 +38,9 @@ pub struct FaceCube {
     pub f: [Color; 54],
 }
 
+/// Solved cube on the facelet level.
 #[rustfmt::skip]
-const SOLVED_FACE_CUBE: FaceCube = FaceCube {
+pub const SOLVED_FACE_CUBE: FaceCube = FaceCube {
     f: [
         Color::U, Color::U, Color::U, Color::U, Color::U, Color::U, Color::U, Color::U, Color::U,
         Color::R, Color::R, Color::R, Color::R, Color::R, Color::R, Color::R, Color::R, Color::R,
@@ -50,6 +51,12 @@ const SOLVED_FACE_CUBE: FaceCube = FaceCube {
     ],
 };
 
+impl Default for FaceCube {
+    fn default() -> Self {
+        SOLVED_FACE_CUBE
+    }
+}
+
 impl TryFrom<&CubieCube> for FaceCube {
     type Error = Error;
     fn try_from(value: &CubieCube) -> Result<Self, Self::Error> {
@@ -57,7 +64,7 @@ impl TryFrom<&CubieCube> for FaceCube {
             return Err(Error::InvalidCubieValue);
         }
 
-        let mut face = SOLVED_FACE_CUBE;
+        let mut face = FaceCube::default();
 
         for (i, corner_faces) in CORNER_FACELET.iter().enumerate() {
             let corner = value.cp[i] as usize;
@@ -86,13 +93,13 @@ impl TryFrom<&str> for FaceCube {
             return Err(Error::InvalidFaceletString);
         }
 
-        let mut f: [Color; 54] = SOLVED_FACE_CUBE.f;
+        let mut face_cube = FaceCube::default();
 
         for (i, c) in cube_string.chars().enumerate() {
-            f[i] = Color::try_from(c)?;
+            face_cube.f[i] = Color::try_from(c)?;
         }
 
-        Ok(FaceCube { f })
+        Ok(face_cube)
     }
 }
 
