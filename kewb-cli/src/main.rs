@@ -2,11 +2,11 @@ use clap::{arg, command, Parser, Subcommand};
 use crossterm::{
     cursor::{MoveLeft, MoveRight, MoveUp},
     execute,
-    style::{Color as TermColor, SetBackgroundColor},
+    style::{Attribute, Color as TermColor, SetBackgroundColor, Stylize},
 };
 use kewb::{
     error::Error,
-    fs::decode_table,
+    fs::{decode_table, write_table},
     utils::{generate_random_state, scramble_from_string},
     Color,
 };
@@ -29,7 +29,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    #[command(about = "solve the cube using two-phase algorithm")]
+    #[command(about = "solves the cube using two-phase algorithm")]
     #[clap(group(
     clap::ArgGroup::new("state")
         .required(true)
@@ -52,7 +52,7 @@ enum Commands {
         details: bool,
     },
 
-    #[command(about = "genrate scramble")]
+    #[command(about = "generates scramble")]
     Scramble {
         #[arg(short, long, default_value_t = 1)]
         number: usize,
@@ -60,6 +60,25 @@ enum Commands {
         #[arg(short, long)]
         preview: bool,
     },
+
+    #[command(about = "generates the table used by the solver")]
+    Table { path: String },
+}
+
+fn solve(
+    scramble: &Option<String>,
+    facelet: &Option<String>,
+    max: u8,
+    timeout: Option<f32>,
+    details: bool,
+) -> Result<(), Error> {
+    if let Some(scramble) = scramble {
+        solve_scramble(scramble, max, timeout, details)?;
+    } else if let Some(facelet) = facelet {
+        solve_facelet(facelet, max, timeout, details)?;
+    }
+
+    Ok(())
 }
 
 fn solve_state(
@@ -160,17 +179,17 @@ fn print_facelet(facelet: &FaceCube) -> Result<(), io::Error> {
 
     println!();
     execute!(&stdout, MoveRight(6))?;
-    print_face(&facelet.f[0..9], 6)?; // U
+    print_face(&facelet.f[0..9], 6)?; // U (white)
     execute!(&stdout, MoveLeft(6))?;
-    print_face(&facelet.f[36..45], 0)?; // L
+    print_face(&facelet.f[36..45], 0)?; // L (orange)
     execute!(&stdout, MoveRight(6), MoveUp(3))?;
-    print_face(&facelet.f[18..27], 6)?; // F
+    print_face(&facelet.f[18..27], 6)?; // F (green)
     execute!(&stdout, MoveLeft(12), MoveUp(3), MoveRight(12))?;
-    print_face(&facelet.f[9..18], 12)?; // R
+    print_face(&facelet.f[9..18], 12)?; // R (red)
     execute!(&stdout, MoveLeft(12), MoveUp(3), MoveRight(18))?;
-    print_face(&facelet.f[45..54], 18)?; // B
+    print_face(&facelet.f[45..54], 18)?; // B (blue)
     execute!(&stdout, MoveLeft(12))?;
-    print_face(&facelet.f[27..36], 6)?; // D
+    print_face(&facelet.f[27..36], 6)?; // D (yellow)
     execute!(&stdout, MoveLeft(12))?;
     println!();
 
@@ -223,32 +242,38 @@ fn scramble(number: usize, preview: bool) -> Result<(), Error> {
     Ok(())
 }
 
-fn main() -> Result<(), Error> {
+fn table(path: &str) -> Result<(), Error> {
+    let mut spinner = Spinner::new(spinners::Spinners::Dots, "Generating scramble".to_owned());
+    let start = Instant::now();
+
+    write_table(path)?;
+
+    let end = Instant::now();
+    spinner.stop_with_newline();
+
+    println!("Done in {}s", (end - start).as_secs_f32());
+
+    Ok(())
+}
+
+fn main() {
     let program = Cli::parse();
 
-    match &program.command {
+    let result = match &program.command {
         Some(Commands::Solve {
-            max,
-            timeout,
             scramble,
             facelet,
+            max,
+            timeout,
             details,
-        }) => {
-            let mut error = None;
-
-            if let Some(scramble) = scramble {
-                error = solve_scramble(scramble, *max, *timeout, *details).err()
-            } else if let Some(facelet) = facelet {
-                error = solve_facelet(facelet, *max, *timeout, *details).err()
-            }
-
-            if let Some(error) = error {
-                println!("Error: {}", error);
-            }
-
-            Ok(())
-        }
+        }) => solve(scramble, facelet, *max, *timeout, *details),
         Some(Commands::Scramble { number, preview }) => scramble(*number, *preview),
+        Some(Commands::Table { path }) => table(path),
         _ => Ok(()),
+    };
+
+    if let Err(error) = result {
+        let styled = "error:".with(TermColor::Red).attribute(Attribute::Bold);
+        println!("{styled} {error}");
     }
 }
