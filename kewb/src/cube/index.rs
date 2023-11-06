@@ -189,6 +189,34 @@ pub fn index_to_eo_cross(index: u16) -> [u8; 12] {
     eo
 }
 
+pub fn index_to_cp_f2l(index: u16) -> [Corner; 8] {
+    let mut cp: [u8; 8] = [0, 0, 0, 0, 4, 5, 6, 7];
+
+    fill_perm_slice(&mut cp[..4], index as usize);
+    cp.map(|value| Corner::try_from(value).unwrap())
+}
+
+pub fn index_to_co_f2l(index: u16) -> [u8; 8] {
+    let mut co: [u8; 8] = [0; 8];
+
+    fill_orientation_slice(&mut co[..4], 3, index);
+    co
+}
+
+pub fn index_to_ep_f2l(index: u16) -> [Edge; 12] {
+    let mut ep = [0, 1, 2, 3, 4, 4, 4, 4, 8, 9, 10, 11]; // fake ep
+
+    fill_perm_slice(&mut ep[4..8], index as usize);
+    ep.map(|value| Edge::try_from(value).unwrap())
+}
+
+pub fn index_to_eo_f2l(index: u16) -> [u8; 12] {
+    let mut eo = [0; 12];
+
+    fill_orientation_slice(&mut eo[4..8], 2, index);
+    eo
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

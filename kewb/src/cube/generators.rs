@@ -1,11 +1,6 @@
 use crate::constants::{CO_COUNT, CP_COUNT, EO_COUNT, EP_COUNT};
 
-use super::{
-    cubie::CubieCube,
-    index::{
-        index_to_co, index_to_cp, index_to_eo, index_to_eo_cross, index_to_ep, index_to_ep_cross,
-    },
-};
+use super::{cubie::CubieCube, index::*};
 use rand::{rngs::ThreadRng, seq::SliceRandom, thread_rng, Rng};
 
 /// Randomly swaps corner or edges to fix parity.
@@ -21,6 +16,40 @@ fn fix_parity(state: &mut CubieCube, rng: &mut ThreadRng, corners: Vec<usize>, e
         let b = *pos[1];
         state.cp.swap(a, b)
     }
+}
+
+/// Generates a random state with oriented last layer corners and edges.
+pub fn generate_state_oll_solved() -> CubieCube {
+    let mut rng = thread_rng();
+    let mut state = CubieCube {
+        cp: index_to_cp_f2l(rng.gen_range(0..4)),
+        co: index_to_co_f2l(0),
+        ep: index_to_ep_f2l(rng.gen_range(0..24)),
+        eo: index_to_eo_f2l(0),
+    };
+
+    if !state.is_solvable() {
+        fix_parity(&mut state, &mut rng, (0..4).collect(), (4..8).collect())
+    }
+
+    state
+}
+
+/// Generates a random state with solved First two layer.
+pub fn generate_state_f2l_solved() -> CubieCube {
+    let mut rng = thread_rng();
+    let mut state = CubieCube {
+        cp: index_to_cp_f2l(rng.gen_range(0..4)),
+        co: index_to_co_f2l(rng.gen_range(0..27)),
+        ep: index_to_ep_f2l(rng.gen_range(0..24)),
+        eo: index_to_eo_f2l(rng.gen_range(0..8)),
+    };
+
+    if !state.is_solvable() {
+        fix_parity(&mut state, &mut rng, (0..4).collect(), (4..8).collect())
+    }
+
+    state
 }
 
 /// Generates a random state with solved cross.

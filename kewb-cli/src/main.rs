@@ -7,11 +7,11 @@ use crossterm::{
 use kewb::{
     error::Error,
     fs::{decode_table, write_table},
-    generators::{generate_random_state, generate_state_cross_solved},
-    utils::scramble_from_string,
+    generators::*,
+    scramble::{scramble_from_state, scramble_from_str},
     Color,
 };
-use kewb::{CubieCube, FaceCube, Move, Solver};
+use kewb::{CubieCube, FaceCube, Solver};
 use spinners::Spinner;
 use std::{
     io::{self, stdout},
@@ -69,11 +69,12 @@ enum Commands {
     Table { path: String },
 }
 
-// TODO: Add more state generators
 #[derive(ValueEnum, Clone)]
 enum State {
     Random,
     CrossSolved,
+    F2LSolved,
+    OllSolved,
 }
 
 fn solve(
@@ -135,12 +136,10 @@ fn solve_scramble(
     timeout: Option<f32>,
     details: bool,
 ) -> Result<(), Error> {
-    if let Some(scramble) = scramble_from_string(scramble) {
-        let state = CubieCube::from(&scramble);
-        Ok(solve_state(state, max, timeout, details)?)
-    } else {
-        Err(Error::InvalidScramble)
-    }
+    let scramble = scramble_from_str(scramble)?;
+    let state = CubieCube::from(&scramble);
+
+    solve_state(state, max, timeout, details)
 }
 
 fn solve_facelet(facelet: &str, max: u8, timeout: Option<f32>, details: bool) -> Result<(), Error> {
@@ -219,9 +218,10 @@ fn scramble(state: &State, number: usize, preview: bool) -> Result<(), Error> {
         let state = match state {
             State::Random => generate_random_state(),
             State::CrossSolved => generate_state_cross_solved(),
+            State::F2LSolved => generate_state_f2l_solved(),
+            State::OllSolved => generate_state_oll_solved(),
         };
-        let scramble = solver.solve(state).unwrap().get_all_moves();
-        let scramble: Vec<Move> = scramble.iter().rev().map(|m| m.get_inverse()).collect();
+        let scramble = scramble_from_state(state, &mut solver)?;
 
         states.push(state);
         scrambles.push(scramble);
