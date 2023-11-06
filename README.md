@@ -3,9 +3,50 @@
 [![Build/test](https://github.com/luckasRanarison/kewb/actions/workflows/rust.yml/badge.svg)](https://github.com/luckasRanarison/kewb/actions/workflows/rust.yml)
 [![crates.io](https://img.shields.io/crates/v/kewb)](https://crates.io/crates/kewb)
 
-This is a Rubik's cube solver that uses Kociemba's [two-phase algorithm](http://kociemba.org/cube.htm) and can also be used as a library for manipulating the 3x3 Rubik's cube. However, please note that this is still a work in progress and the implementation is not yet efficient. The solver does not currently use symmetric reductions, pre-moves, or multi-threaded search.
+Kewb is a library for manipulating and solving the 3x3 Rubiks's cube using Kociemba's [two-phase algorithm](http://kociemba.org/cube.htm). There is also a [CLI](#cli) version which showcases most of kewb features.
+
+Please note that this is still a work in progress and the implementation is not yet efficient. The solver does not currently use symmetric reductions, pre-moves, or multi-threaded search.
 
 ## Usage
+
+### Library
+
+See https://docs.rs/kewb/latest/kewb/ for an exhaustive list of APIs provided by kewb.
+
+The solver needs some precomputed data which is represented by the `DataTable` struct. However, generating it takes some amount of time so it's recommended to write it on the disk or bundle it with the executable. You can use the `write_table()` function or the `table` command from `kewb-cli` to generate the table.
+
+```rust
+use kewb::{error::Error, utils::scramble_from_string, DataTable, FaceCube, Solver, CubieCube};
+
+
+fn main() -> Result<(), Error> {
+    // Method 1: Bundling the table in the executable
+    // const TABLE_BYTES = include_bytes!("./path_to_file")
+    // let table = decode_table(&TABLE_BYTES)?;
+
+    // Method 2: Reading the table from a file
+    // let table = read_table("./path_to_file")?;
+
+    // Method 3: Generating the table at runtime (slow)
+    let table = DataTable::default();
+
+    let mut solver = Solver::new(&table, 23, None);
+    let scramble = scramble_from_string("R U R' U'").unwrap(); // vec![R, U, R3, U3]
+    let state = CubieCube::from(&scramble);
+    let solution = solver.solve(state).unwrap();
+
+    println!("{}", solution);
+
+    let faces = "DRBLUURLDRBLRRBFLFFUBFFDRUDURRBDFBBULDUDLUDLBUFFDBFLRL";
+    let face_cube = FaceCube::try_from(faces)?;
+    let state = CubieCube::try_from(&face_cube)?;
+    let solution = solver.solve(state).unwrap();
+
+    println!("{}", solution);
+
+    Ok(())
+}
+```
 
 ### CLI
 
@@ -13,44 +54,15 @@ By default, there is no timeout, which means the solver will return the first so
 
 ```bash
 kewb-cli help
+# default values: max = 23, timeout = none, details = false
 kewb-cli solve --scramble "R U R' U'" --max 22 --timeout 1 --details
 kewb-cli solve -s "R U R' U'" -m 22 -t 1 -d
-# default values: max = 23, timeout = none, details = false
-kewb-cli scramble
-kewb-cli scramble -n 5
-# default values: number = 1
 kewb-cli solve --facelet DRBLUURLDRBLRRBFLFFUBFFDRUDURRBDFBBULDUDLUDLBUFFDBFLRL
-```
-
-### Library
-
-https://docs.rs/kewb/latest/kewb/
-
-```rust
-use kewb::{error::Error, utils::scramble_from_string, DataTable, FaceCube, Solver, State};
-
-fn main() -> Result<(), Error> {
-    // Generating the table takes some time so it's recommended to write it on the disk
-    // write_table("path_to_file")?;
-    // let table = read_table("./path_to_file")?;
-    let table = DataTable::default();
-
-    let mut solver = Solver::new(&table, 23, None);
-    let scramble = scramble_from_string("R U R' U'").unwrap(); // vec![R, U, R3, U3]
-    let state = State::from(&scramble);
-    let solution = solver.solve(state).unwrap();
-
-    println!("{}", solution);
-
-    let faces = "DRBLUURLDRBLRRBFLFFUBFFDRUDURRBDFBBULDUDLUDLBUFFDBFLRL";
-    let face_cube = FaceCube::try_from(faces)?;
-    let state = State::try_from(&face_cube)?;
-    let solution = solver.solve(state).unwrap();
-
-    println!("{}", solution);
-
-    Ok(())
-}
+# default values: number = 1, preview = false
+kewb-cli scramble -p
+kewb-cli scramble -n 5
+# generates the table used by the solver
+kewb-cli table ./path_to_file
 ```
 
 ## Build
