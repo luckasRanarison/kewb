@@ -210,14 +210,14 @@ fn print_facelet(facelet: &FaceCube) -> Result<(), io::Error> {
 }
 
 fn scramble(state: &State, number: usize, preview: bool) -> Result<(), Error> {
-    let mut spinner = Spinner::new(spinners::Spinners::Dots, "Generating scramble".to_owned());
-    let mut scrambles = Vec::new();
-    let mut states = Vec::new();
     let table = decode_table(TABLE)?;
     let start = Instant::now();
+    let mut spinner = Spinner::new(spinners::Spinners::Dots, "Generating scramble".to_owned());
+    let mut solver = Solver::new(&table, 25, None);
+    let mut scrambles = Vec::new();
+    let mut states = Vec::new();
 
     for _ in 0..number {
-        let mut solver = Solver::new(&table, 25, None);
         let state = match state {
             State::Random => generate_random_state(),
             State::CrossSolved => generate_state_cross_solved(),
@@ -231,6 +231,7 @@ fn scramble(state: &State, number: usize, preview: bool) -> Result<(), Error> {
 
         states.push(state);
         scrambles.push(scramble);
+        solver.clear();
     }
 
     let end = Instant::now();
