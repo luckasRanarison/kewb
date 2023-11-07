@@ -75,6 +75,9 @@ enum State {
     CrossSolved,
     F2LSolved,
     OllSolved,
+    OllCrossSolved,
+    EdgesSolved,
+    CornersSolved,
 }
 
 fn solve(
@@ -220,6 +223,9 @@ fn scramble(state: &State, number: usize, preview: bool) -> Result<(), Error> {
             State::CrossSolved => generate_state_cross_solved(),
             State::F2LSolved => generate_state_f2l_solved(),
             State::OllSolved => generate_state_oll_solved(),
+            State::OllCrossSolved => generate_state_oll_cross_solved(),
+            State::EdgesSolved => generate_state_edges_solved(),
+            State::CornersSolved => generate_state_corners_solved(),
         };
         let scramble = scramble_from_state(state, &mut solver)?;
 
@@ -285,7 +291,7 @@ fn main() {
             state,
             number,
             preview,
-        }) => scramble(&state, *number, *preview),
+        }) => scramble(state, *number, *preview),
         Some(Commands::Table { path }) => table(path),
         _ => Ok(()),
     };
