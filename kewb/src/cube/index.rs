@@ -62,8 +62,8 @@ pub fn co_to_index(corner: &[u8; 8]) -> u16 {
 
 pub fn index_to_co(index: u16) -> [u8; 8] {
     let mut co = [0; 8];
-
     fill_orientation_slice(&mut co, 3, index);
+
     co
 }
 
@@ -79,8 +79,8 @@ pub fn eo_to_index(edge: &[u8; 12]) -> u16 {
 
 pub fn index_to_eo(index: u16) -> [u8; 12] {
     let mut eo = [0; 12];
-
     fill_orientation_slice(&mut eo, 2, index);
+
     eo
 }
 
@@ -90,6 +90,7 @@ fn calculate_combo(n: u8, k: u8) -> u16 {
     }
 
     let mut result: u16 = 1;
+
     for i in 0..k as u16 {
         result *= n as u16 - i;
         result /= i + 1;
@@ -184,8 +185,8 @@ pub fn index_to_ep_cross(index: u16) -> [Edge; 12] {
 
 pub fn index_to_eo_cross(index: u16) -> [u8; 12] {
     let mut eo = [0; 12];
-
     fill_orientation_slice(&mut eo[..8], 2, index);
+
     eo
 }
 
@@ -198,8 +199,8 @@ pub fn index_to_cp_f2l(index: u16) -> [Corner; 8] {
 
 pub fn index_to_co_f2l(index: u16) -> [u8; 8] {
     let mut co: [u8; 8] = [0; 8];
-
     fill_orientation_slice(&mut co[..4], 3, index);
+
     co
 }
 
@@ -212,8 +213,8 @@ pub fn index_to_ep_f2l(index: u16) -> [Edge; 12] {
 
 pub fn index_to_eo_f2l(index: u16) -> [u8; 12] {
     let mut eo = [0; 12];
-
     fill_orientation_slice(&mut eo[4..8], 2, index);
+
     eo
 }
 
