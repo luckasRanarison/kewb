@@ -39,6 +39,7 @@ pub fn scramble_from_state(state: CubieCube, solver: &mut Solver) -> Result<Vec<
         Ok(solution
             .get_all_moves()
             .iter()
+            .rev()
             .map(|m| m.get_inverse())
             .collect())
     } else {
