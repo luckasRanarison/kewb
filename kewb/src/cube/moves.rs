@@ -77,38 +77,6 @@ pub fn is_move_available(prev: Move, current: Move) -> bool {
     current != prev && !current.is_inverse(prev) && !current.is_same_layer(prev)
 }
 
-pub fn scramble_from_string(string: &str) -> Option<Vec<Move>> {
-    let mut scramble = vec![];
-
-    for word in string.split_whitespace() {
-        let m = match word.trim() {
-            "R" => R,
-            "R'" => R3,
-            "R2" => R2,
-            "L" => L,
-            "L'" => L3,
-            "L2" => L2,
-            "U" => U,
-            "U'" => U3,
-            "U2" => U2,
-            "D" => D,
-            "D'" => D3,
-            "D2" => D2,
-            "F" => F,
-            "F'" => F3,
-            "F2" => F2,
-            "B" => B,
-            "B'" => B3,
-            "B2" => B2,
-            _ => return None,
-        };
-
-        scramble.push(m);
-    }
-
-    Some(scramble)
-}
-
 pub const U_MOVE: CubieCube = CubieCube {
     cp: [UFL, UBL, UBR, UFR, DFL, DFR, DBR, DBL],
     co: [0, 0, 0, 0, 0, 0, 0, 0],

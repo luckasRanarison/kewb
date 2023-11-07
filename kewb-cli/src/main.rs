@@ -1,4 +1,4 @@
-use clap::{arg, command, Parser, Subcommand};
+use clap::{arg, command, Parser, Subcommand, ValueEnum};
 use crossterm::{
     cursor::{MoveLeft, MoveRight, MoveUp},
     execute,
@@ -7,10 +7,11 @@ use crossterm::{
 use kewb::{
     error::Error,
     fs::{decode_table, write_table},
-    utils::{generate_random_state, scramble_from_string},
+    generators::*,
+    scramble::{scramble_from_state, scramble_from_str},
     Color,
 };
-use kewb::{CubieCube, FaceCube, Move, Solver};
+use kewb::{CubieCube, FaceCube, Solver};
 use spinners::Spinner;
 use std::{
     io::{self, stdout},
@@ -54,6 +55,9 @@ enum Commands {
 
     #[command(about = "generates scramble")]
     Scramble {
+        #[arg(default_value = "random")]
+        state: State,
+
         #[arg(short, long, default_value_t = 1)]
         number: usize,
 
@@ -63,6 +67,17 @@ enum Commands {
 
     #[command(about = "generates the table used by the solver")]
     Table { path: String },
+}
+
+#[derive(ValueEnum, Clone)]
+enum State {
+    Random,
+    CrossSolved,
+    F2LSolved,
+    OllSolved,
+    OllCrossSolved,
+    EdgesSolved,
+    CornersSolved,
 }
 
 fn solve(
@@ -124,12 +139,10 @@ fn solve_scramble(
     timeout: Option<f32>,
     details: bool,
 ) -> Result<(), Error> {
-    if let Some(scramble) = scramble_from_string(scramble) {
-        let state = CubieCube::from(&scramble);
-        Ok(solve_state(state, max, timeout, details)?)
-    } else {
-        Err(Error::InvalidScramble)
-    }
+    let scramble = scramble_from_str(scramble)?;
+    let state = CubieCube::from(&scramble);
+
+    solve_state(state, max, timeout, details)
 }
 
 fn solve_facelet(facelet: &str, max: u8, timeout: Option<f32>, details: bool) -> Result<(), Error> {
@@ -196,21 +209,29 @@ fn print_facelet(facelet: &FaceCube) -> Result<(), io::Error> {
     Ok(())
 }
 
-fn scramble(number: usize, preview: bool) -> Result<(), Error> {
-    let mut spinner = Spinner::new(spinners::Spinners::Dots, "Generating scramble".to_owned());
-    let mut scrambles = Vec::new();
-    let mut states = Vec::new();
+fn scramble(state: &State, number: usize, preview: bool) -> Result<(), Error> {
     let table = decode_table(TABLE)?;
     let start = Instant::now();
+    let mut spinner = Spinner::new(spinners::Spinners::Dots, "Generating scramble".to_owned());
+    let mut solver = Solver::new(&table, 25, None);
+    let mut scrambles = Vec::new();
+    let mut states = Vec::new();
 
     for _ in 0..number {
-        let mut solver = Solver::new(&table, 25, None);
-        let state = generate_random_state();
-        let scramble = solver.solve(state).unwrap().get_all_moves();
-        let scramble: Vec<Move> = scramble.iter().rev().map(|m| m.get_inverse()).collect();
+        let state = match state {
+            State::Random => generate_random_state(),
+            State::CrossSolved => generate_state_cross_solved(),
+            State::F2LSolved => generate_state_f2l_solved(),
+            State::OllSolved => generate_state_oll_solved(),
+            State::OllCrossSolved => generate_state_oll_cross_solved(),
+            State::EdgesSolved => generate_state_edges_solved(),
+            State::CornersSolved => generate_state_corners_solved(),
+        };
+        let scramble = scramble_from_state(state, &mut solver)?;
 
         states.push(state);
         scrambles.push(scramble);
+        solver.clear();
     }
 
     let end = Instant::now();
@@ -267,7 +288,11 @@ fn main() {
             timeout,
             details,
         }) => solve(scramble, facelet, *max, *timeout, *details),
-        Some(Commands::Scramble { number, preview }) => scramble(*number, *preview),
+        Some(Commands::Scramble {
+            state,
+            number,
+            preview,
+        }) => scramble(state, *number, *preview),
         Some(Commands::Table { path }) => table(path),
         _ => Ok(()),
     };

@@ -16,8 +16,12 @@ See https://docs.rs/kewb/latest/kewb/ for an exhaustive list of APIs provided by
 The solver needs some precomputed data which is represented by the `DataTable` struct. However, generating it takes some amount of time so it's recommended to write it on the disk or bundle it with the executable. You can use the `write_table()` function or the `table` command from `kewb-cli` to generate the table.
 
 ```rust
-use kewb::{error::Error, utils::scramble_from_string, DataTable, FaceCube, Solver, CubieCube};
-
+use kewb::{
+    error::Error,
+    generators::generate_state_cross_solved,
+    scramble::{scramble_from_state, scramble_from_str},
+    CubieCube, DataTable, FaceCube, Solver,
+};
 
 fn main() -> Result<(), Error> {
     // Method 1: Bundling the table in the executable
@@ -31,11 +35,13 @@ fn main() -> Result<(), Error> {
     let table = DataTable::default();
 
     let mut solver = Solver::new(&table, 23, None);
-    let scramble = scramble_from_string("R U R' U'").unwrap(); // vec![R, U, R3, U3]
+    let scramble = scramble_from_str("R U R' U'")?; // vec![R, U, R3, U3]
     let state = CubieCube::from(&scramble);
     let solution = solver.solve(state).unwrap();
 
     println!("{}", solution);
+
+    solver.clear();
 
     let faces = "DRBLUURLDRBLRRBFLFFUBFFDRUDURRBDFBBULDUDLUDLBUFFDBFLRL";
     let face_cube = FaceCube::try_from(faces)?;
@@ -43,6 +49,13 @@ fn main() -> Result<(), Error> {
     let solution = solver.solve(state).unwrap();
 
     println!("{}", solution);
+
+    solver.clear();
+
+    let cross_solved = generate_state_cross_solved();
+    let scramble = scramble_from_state(edges_solved, &mut solver)?;
+
+    println!("{:?}", scramble);
 
     Ok(())
 }
@@ -58,9 +71,10 @@ kewb-cli help
 kewb-cli solve --scramble "R U R' U'" --max 22 --timeout 1 --details
 kewb-cli solve -s "R U R' U'" -m 22 -t 1 -d
 kewb-cli solve --facelet DRBLUURLDRBLRRBFLFFUBFFDRUDURRBDFBBULDUDLUDLBUFFDBFLRL
-# default values: number = 1, preview = false
+# default values: state = random, number = 1, preview = false
 kewb-cli scramble -p
 kewb-cli scramble -n 5
+kewb-cli scramble f2l-solved
 # generates the table used by the solver
 kewb-cli table ./path_to_file
 ```
