@@ -30,9 +30,8 @@ pub fn get_co_table() -> Table<u16> {
     let mut co_table = vec![vec![0; 18]; CO_COUNT as usize];
 
     for i in 0..CO_COUNT {
-        let co = index_to_co(i);
         let state = CubieCube {
-            co,
+            co: index_to_co(i),
             ..Default::default()
         };
 
@@ -49,9 +48,8 @@ pub fn get_eo_table() -> Table<u16> {
     let mut eo_table = vec![vec![0; 18]; EO_COUNT as usize];
 
     for i in 0..EO_COUNT {
-        let eo = index_to_eo(i);
         let state = CubieCube {
-            eo,
+            eo: index_to_eo(i),
             ..Default::default()
         };
 
@@ -67,9 +65,8 @@ pub fn get_eo_table() -> Table<u16> {
 pub fn get_e_combo_table() -> Table<u16> {
     let mut e_combo_table = vec![vec![0; 18]; E_COMBO_COUNT as usize];
     for i in 0..E_COMBO_COUNT {
-        let ep = index_to_e_combo(i);
         let state = CubieCube {
-            ep,
+            ep: index_to_e_combo(i),
             ..Default::default()
         };
 
@@ -86,9 +83,8 @@ pub fn get_cp_table() -> Table<u16> {
     let mut cp_table = vec![vec![0; 10]; CP_COUNT as usize];
 
     for i in 0..CP_COUNT {
-        let cp = index_to_cp(i);
         let state = CubieCube {
-            cp,
+            cp: index_to_cp(i),
             ..Default::default()
         };
 
@@ -105,9 +101,8 @@ pub fn get_ud_ep_table() -> Table<u16> {
     let mut ep_table = vec![vec![0; 10]; UD_EP_COUNT as usize];
 
     for i in 0..UD_EP_COUNT {
-        let ep = index_to_ud_ep(i);
         let state = CubieCube {
-            ep,
+            ep: index_to_ud_ep(i),
             ..Default::default()
         };
 
@@ -124,9 +119,8 @@ pub fn get_e_ep_table() -> Table<u16> {
     let mut e_ep_table = vec![vec![0; 10]; E_EP_COUNT as usize];
 
     for i in 0..E_EP_COUNT {
-        let ep = index_to_e_ep(i);
         let state = CubieCube {
-            ep,
+            ep: index_to_e_ep(i),
             ..Default::default()
         };
 

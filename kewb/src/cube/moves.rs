@@ -1,4 +1,6 @@
-use std::fmt;
+use std::{fmt, str::FromStr};
+
+use crate::error::Error;
 
 use self::Move::*;
 use super::cubie::{Corner::*, CubieCube, Edge::*};
@@ -27,6 +29,34 @@ impl fmt::Display for Move {
             F3 => write!(f, "F'"),
             B3 => write!(f, "B'"),
             _ => write!(f, "{:?}", self),
+        }
+    }
+}
+
+impl FromStr for Move {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "R" => Ok(R),
+            "R'" => Ok(R3),
+            "R2" => Ok(R2),
+            "L" => Ok(L),
+            "L'" => Ok(L3),
+            "L2" => Ok(L2),
+            "U" => Ok(U),
+            "U'" => Ok(U3),
+            "U2" => Ok(U2),
+            "D" => Ok(D),
+            "D'" => Ok(D3),
+            "D2" => Ok(D2),
+            "F" => Ok(F),
+            "F'" => Ok(F3),
+            "F2" => Ok(F2),
+            "B" => Ok(B),
+            "B'" => Ok(B3),
+            "B2" => Ok(B2),
+            _ => Err(Error::InvalidScramble),
         }
     }
 }

@@ -1,35 +1,11 @@
-use crate::{cube::moves::Move::*, error::Error, CubieCube, Move, Solver};
+use std::str::FromStr;
 
-pub fn scramble_from_str(string: &str) -> Result<Vec<Move>, Error> {
-    let mut scramble = vec![];
+use crate::{error::Error, CubieCube, Move, Solver};
 
-    for word in string.split_whitespace() {
-        let m = match word.trim() {
-            "R" => R,
-            "R'" => R3,
-            "R2" => R2,
-            "L" => L,
-            "L'" => L3,
-            "L2" => L2,
-            "U" => U,
-            "U'" => U3,
-            "U2" => U2,
-            "D" => D,
-            "D'" => D3,
-            "D2" => D2,
-            "F" => F,
-            "F'" => F3,
-            "F2" => F2,
-            "B" => B,
-            "B'" => B3,
-            "B2" => B2,
-            _ => return Err(Error::InvalidScramble),
-        };
-
-        scramble.push(m);
-    }
-
-    Ok(scramble)
+pub fn scramble_from_str(s: &str) -> Result<Vec<Move>, Error> {
+    s.split_whitespace()
+        .map(|word| Move::from_str(word.trim()))
+        .collect()
 }
 
 pub fn scramble_from_state(state: CubieCube, solver: &mut Solver) -> Result<Vec<Move>, Error> {
