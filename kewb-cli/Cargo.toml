@@ -1,6 +1,6 @@
 [package]
 name = "kewb-cli"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2021"
 description = "CLI application for solving and scrambling the 3x3 Rubik's cube"
 authors = [
