@@ -15,6 +15,7 @@ use kewb::{CubieCube, FaceCube, Solver};
 use spinners::Spinner;
 use std::{
     io::{self, stdout},
+    process,
     time::Instant,
 };
 
@@ -299,6 +300,7 @@ fn main() {
 
     if let Err(error) = result {
         let styled = "error:".with(TermColor::Red).attribute(Attribute::Bold);
-        println!("{styled} {error}");
+        eprintln!("{styled} {error}");
+        process::exit(1);
     }
 }
