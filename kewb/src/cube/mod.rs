@@ -5,3 +5,4 @@ pub mod generators;
 pub mod index;
 pub mod moves;
 pub mod scramble;
+mod utils;

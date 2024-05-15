@@ -1,7 +1,7 @@
 use self::{Corner::*, Edge::*, Move::*};
 use crate::error::Error;
 
-use super::{facelet::*, moves::*};
+use super::{facelet::*, moves::*, utils::has_duplicates};
 use std::ops::Mul;
 
 /// Represents the 8 corners on the cube, described by the layer they are on.
@@ -191,6 +191,10 @@ impl CubieCube {
 
     /// Checks if CubieCube is a valid cubie representation.
     pub fn is_solvable(&self) -> bool {
+        if has_duplicates(&self.cp) || has_duplicates(&self.ep) {
+            return false;
+        }
+
         let c_perm = self.count_corner_perm();
         let e_perm = self.count_edge_perm();
         let c_twist = self.count_corner_twist();
