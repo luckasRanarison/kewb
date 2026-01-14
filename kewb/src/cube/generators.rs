@@ -1,11 +1,11 @@
 use crate::constants::{CO_COUNT, CP_COUNT, EO_COUNT, EP_COUNT};
 
 use super::{cubie::CubieCube, index::*};
-use rand::{rngs::ThreadRng, seq::SliceRandom, thread_rng, Rng};
+use rand::{rngs::ThreadRng, prelude::IndexedRandom, rng, Rng};
 
 /// Randomly swaps corner or edges to fix parity.
 fn fix_parity(state: &mut CubieCube, rng: &mut ThreadRng, corners: Vec<usize>, edges: Vec<usize>) {
-    if rng.gen_bool(0.5) {
+    if rng.random_bool(0.5) {
         swap_edges(state, rng, edges)
     } else {
         swap_corners(state, rng, corners)
@@ -28,10 +28,10 @@ fn swap_corners(state: &mut CubieCube, rng: &mut ThreadRng, corners: Vec<usize>)
 
 /// Generates a random state with corners solved.
 pub fn generate_state_corners_solved() -> CubieCube {
-    let mut rng = thread_rng();
+    let mut rng = rng();
     let mut state = CubieCube {
-        ep: index_to_ep(rng.gen_range(0..EP_COUNT)),
-        eo: index_to_eo(rng.gen_range(0..EO_COUNT)),
+        ep: index_to_ep(rng.random_range(0..EP_COUNT)),
+        eo: index_to_eo(rng.random_range(0..EO_COUNT)),
         ..Default::default()
     };
 
@@ -44,10 +44,10 @@ pub fn generate_state_corners_solved() -> CubieCube {
 
 /// Generates a random state with edges solved.
 pub fn generate_state_edges_solved() -> CubieCube {
-    let mut rng = thread_rng();
+    let mut rng = rng();
     let mut state = CubieCube {
-        cp: index_to_cp(rng.gen_range(0..CP_COUNT)),
-        co: index_to_co(rng.gen_range(0..CO_COUNT)),
+        cp: index_to_cp(rng.random_range(0..CP_COUNT)),
+        co: index_to_co(rng.random_range(0..CO_COUNT)),
         ..Default::default()
     };
 
@@ -60,11 +60,11 @@ pub fn generate_state_edges_solved() -> CubieCube {
 
 /// Generates a random state with oriented solved last layer cross.
 pub fn generate_state_oll_cross_solved() -> CubieCube {
-    let mut rng = thread_rng();
+    let mut rng = rng();
     let mut state = CubieCube {
-        cp: index_to_cp_f2l(rng.gen_range(0..4)),
-        co: index_to_co_f2l(rng.gen_range(0..27)),
-        ep: index_to_ep_f2l(rng.gen_range(0..24)),
+        cp: index_to_cp_f2l(rng.random_range(0..4)),
+        co: index_to_co_f2l(rng.random_range(0..27)),
+        ep: index_to_ep_f2l(rng.random_range(0..24)),
         ..Default::default()
     };
 
@@ -77,10 +77,10 @@ pub fn generate_state_oll_cross_solved() -> CubieCube {
 
 /// Generates a random state with oriented last layer corners and edges.
 pub fn generate_state_oll_solved() -> CubieCube {
-    let mut rng = thread_rng();
+    let mut rng = rng();
     let mut state = CubieCube {
-        cp: index_to_cp_f2l(rng.gen_range(0..4)),
-        ep: index_to_ep_f2l(rng.gen_range(0..24)),
+        cp: index_to_cp_f2l(rng.random_range(0..4)),
+        ep: index_to_ep_f2l(rng.random_range(0..24)),
         ..Default::default()
     };
 
@@ -93,12 +93,12 @@ pub fn generate_state_oll_solved() -> CubieCube {
 
 /// Generates a random state with solved First two layer.
 pub fn generate_state_f2l_solved() -> CubieCube {
-    let mut rng = thread_rng();
+    let mut rng = rng();
     let mut state = CubieCube {
-        cp: index_to_cp_f2l(rng.gen_range(0..4)),
-        co: index_to_co_f2l(rng.gen_range(0..27)),
-        ep: index_to_ep_f2l(rng.gen_range(0..24)),
-        eo: index_to_eo_f2l(rng.gen_range(0..8)),
+        cp: index_to_cp_f2l(rng.random_range(0..4)),
+        co: index_to_co_f2l(rng.random_range(0..27)),
+        ep: index_to_ep_f2l(rng.random_range(0..24)),
+        eo: index_to_eo_f2l(rng.random_range(0..8)),
     };
 
     if !state.is_solvable() {
@@ -110,12 +110,12 @@ pub fn generate_state_f2l_solved() -> CubieCube {
 
 /// Generates a random state with solved cross.
 pub fn generate_state_cross_solved() -> CubieCube {
-    let mut rng = thread_rng();
+    let mut rng = rng();
     let mut state = CubieCube {
-        cp: index_to_cp(rng.gen_range(0..CP_COUNT)),
-        co: index_to_co(rng.gen_range(0..CO_COUNT)),
-        ep: index_to_ep_cross(rng.gen_range(0..40320)),
-        eo: index_to_eo_cross(rng.gen_range(0..128)),
+        cp: index_to_cp(rng.random_range(0..CP_COUNT)),
+        co: index_to_co(rng.random_range(0..CO_COUNT)),
+        ep: index_to_ep_cross(rng.random_range(0..40320)),
+        eo: index_to_eo_cross(rng.random_range(0..128)),
     };
 
     if !state.is_solvable() {
@@ -127,12 +127,12 @@ pub fn generate_state_cross_solved() -> CubieCube {
 
 /// Generates a random state on the cubie level.
 pub fn generate_random_state() -> CubieCube {
-    let mut rng = thread_rng();
+    let mut rng = rng();
     let mut state = CubieCube {
-        cp: index_to_cp(rng.gen_range(0..CP_COUNT)),
-        co: index_to_co(rng.gen_range(0..CO_COUNT)),
-        ep: index_to_ep(rng.gen_range(0..EP_COUNT)),
-        eo: index_to_eo(rng.gen_range(0..EO_COUNT)),
+        cp: index_to_cp(rng.random_range(0..CP_COUNT)),
+        co: index_to_co(rng.random_range(0..CO_COUNT)),
+        ep: index_to_ep(rng.random_range(0..EP_COUNT)),
+        eo: index_to_eo(rng.random_range(0..EO_COUNT)),
     };
 
     if !state.is_solvable() {
